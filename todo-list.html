@@ -805,7 +805,7 @@
     <section class="panel history" aria-label="最近 7 天完成情况">
       <div class="history-head">
         <h2>最近 7 天</h2>
-        <span class="history-note">完成 / 未完成 / 完成率</span>
+        <span class="history-note">仅统计已确认日期的当天任务</span>
       </div>
       <div class="history-list" id="historyList"></div>
     </section>
@@ -956,6 +956,12 @@
       return { total: tasks.length, done, left: tasks.length - done };
     }
 
+    function confirmedDayStats(dateKey) {
+      const tasks = data.tasks.filter((task) => task.type === "once" && task.date === dateKey);
+      const done = tasks.filter((task) => isDone(task, dateKey)).length;
+      return { total: tasks.length, done, left: tasks.length - done };
+    }
+
     function isConfirmed(dateKey) {
       return Boolean(data.confirmations && data.confirmations[dateKey]);
     }
@@ -1025,9 +1031,27 @@
     }
 
     function renderHistory() {
-      const days = Array.from({ length: 7 }, (_, index) => addDays(selectedDate, -index));
+      const days = Array.from({ length: 7 }, (_, index) => addDays(selectedDate, -index))
+        .filter((dateKey) => isConfirmed(dateKey));
+
+      if (!days.length) {
+        historyList.innerHTML = `
+          <article class="day-card rest">
+            <div class="day-date">
+              <span>暂无记录</span>
+            </div>
+            <div class="reward-badge rest">
+              <span class="reward-mark">休</span>
+              <span>确认后显示</span>
+            </div>
+            <div class="mini-stats">确认某一天的任务后，这里会显示当天任务统计。</div>
+          </article>
+        `;
+        return;
+      }
+
       historyList.innerHTML = days.map((dateKey) => {
-        const stats = dayStats(dateKey);
+        const stats = confirmedDayStats(dateKey);
         const rate = stats.total ? Math.round((stats.done / stats.total) * 100) : 0;
         const doneText = `完成 ${stats.done}`;
         const leftText = `未完成 ${stats.left}`;
