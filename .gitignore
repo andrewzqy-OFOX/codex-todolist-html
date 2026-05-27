@@ -1,0 +1,13 @@
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+
+# Legacy local materials kept out of this To Do List repo
+assets_chinese_wine_culture/
+财报解读/
+make_chinese_wine_culture_ppt.js
+make_chinese_wine_culture_ppt_rich.js
+value_investment_research_prompt.py
+启动价值投资研究.ps1
+*.pptx
