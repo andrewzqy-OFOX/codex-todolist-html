@@ -377,7 +377,7 @@
 
     .todo {
       display: grid;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: auto auto 1fr auto;
       gap: 12px;
       align-items: center;
       min-height: 58px;
@@ -386,6 +386,19 @@
       border-radius: 8px;
       background: #ffffff;
       box-shadow: 4px 4px 0 rgba(23, 23, 23, 0.16);
+    }
+
+    .todo-index {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--line);
+      border-radius: 50%;
+      background: var(--accent);
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1;
     }
 
     .check {
@@ -416,6 +429,24 @@
       line-height: 1.45;
     }
 
+    .todo-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .todo-duration {
+      flex: 0 0 auto;
+      padding: 3px 8px;
+      border: 2px solid var(--line);
+      border-radius: 999px;
+      background: #fff8d7;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
     .todo.done .todo-text {
       color: var(--muted);
       text-decoration: line-through;
@@ -433,6 +464,24 @@
       gap: 6px;
       color: var(--muted);
       font-size: 12px;
+    }
+
+    .task-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .summary-chip {
+      padding: 5px 9px;
+      border: 2px solid var(--line);
+      border-radius: 999px;
+      color: var(--text);
+      background: #ffffff;
+      font-weight: 700;
     }
 
     .pill {
@@ -689,6 +738,21 @@
       .history-list {
         grid-template-columns: 1fr;
       }
+
+      .todo {
+        grid-template-columns: auto auto 1fr;
+      }
+
+      .todo .delete {
+        grid-column: 3;
+        justify-self: end;
+      }
+
+      .todo-title-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+      }
     }
   </style>
 </head>
@@ -786,6 +850,7 @@
         </div>
       </div>
 
+      <div class="task-summary" id="taskSummary"></div>
       <ul class="list" id="todoList"></ul>
 
       <div class="empty" id="emptyState">
@@ -828,6 +893,7 @@
     const setupSubtitle = document.querySelector("#setupSubtitle");
     const selectedDateText = document.querySelector("#selectedDateText");
     const listTitle = document.querySelector("#listTitle");
+    const taskSummary = document.querySelector("#taskSummary");
     const historyList = document.querySelector("#historyList");
     const typeHint = document.querySelector("#typeHint");
 
@@ -999,16 +1065,20 @@
       doneCount.textContent = stats.done;
       leftCount.textContent = stats.left;
       progressBar.style.width = `${completion}%`;
+      taskSummary.innerHTML = renderDurationSummary(tasksForDate(selectedDate));
 
-      list.innerHTML = items.map((todo) => `
+      list.innerHTML = items.map((todo, index) => `
         <li class="todo ${todo.done ? "done" : ""}" data-id="${todo.id}">
+          <span class="todo-index">${index + 1}</span>
           <button class="check" type="button" aria-label="切换完成状态">✓</button>
           <div class="todo-main">
-            <span class="todo-text">${escapeHtml(todo.text)}</span>
+            <span class="todo-title-row">
+              <span class="todo-text">${escapeHtml(todo.text)}</span>
+              ${taskDuration(todo) ? `<span class="todo-duration">${escapeHtml(taskDuration(todo))}</span>` : ""}
+            </span>
             <span class="todo-meta">
               <span class="pill ${todo.type === "daily" ? "daily" : "once"}">${todo.type === "daily" ? "每天重复" : "当天任务"}</span>
               <span class="pill">${todo.type === "daily" ? "每日统计" : escapeHtml(todo.date)}</span>
-              ${taskDuration(todo) ? `<span class="pill">时长 ${escapeHtml(taskDuration(todo))}</span>` : ""}
               ${todo.amount ? `<span class="pill">任务量 ${escapeHtml(String(todo.amount))}</span>` : ""}
             </span>
           </div>
@@ -1090,6 +1160,63 @@
 
     function taskDuration(todo) {
       return todo.duration || todo.estimate || "";
+    }
+
+    function renderDurationSummary(tasks) {
+      const durations = tasks.map((task) => taskDuration(task).trim()).filter(Boolean);
+      if (!durations.length) {
+        return '<span class="summary-chip">汇总时长：未填写</span>';
+      }
+
+      const parsed = durations.map(parseDuration);
+      const minutes = parsed.reduce((sum, item) => sum + item.minutes, 0);
+      const unknown = parsed.filter((item) => !item.parsed).map((item) => item.text);
+      const parts = [];
+
+      if (minutes > 0) {
+        parts.push(`可计算 ${formatMinutes(minutes)}`);
+      }
+
+      if (unknown.length) {
+        parts.push(`其他 ${unknown.map(escapeHtml).join("、")}`);
+      }
+
+      return `<span class="summary-chip">汇总时长：${parts.join(" + ")}</span>`;
+    }
+
+    function parseDuration(text) {
+      const normalized = text.replace(/\s+/g, "").toLowerCase();
+      let minutes = 0;
+      let parsed = false;
+      const hourMatch = normalized.match(/(\d+(?:\.\d+)?)(?:小时|小時|h|hr|hrs)/);
+      const minuteMatch = normalized.match(/(\d+(?:\.\d+)?)(?:分钟|分鐘|分|min|mins|m)/);
+
+      if (hourMatch) {
+        minutes += Number(hourMatch[1]) * 60;
+        parsed = true;
+      }
+
+      if (minuteMatch) {
+        minutes += Number(minuteMatch[1]);
+        parsed = true;
+      }
+
+      if (!parsed && /^\d+(?:\.\d+)?$/.test(normalized)) {
+        minutes += Number(normalized);
+        parsed = true;
+      }
+
+      return { text, minutes, parsed };
+    }
+
+    function formatMinutes(minutes) {
+      const rounded = Math.round(minutes);
+      const hours = Math.floor(rounded / 60);
+      const rest = rounded % 60;
+
+      if (!hours) return `${rest} 分钟`;
+      if (!rest) return `${hours} 小时`;
+      return `${hours} 小时 ${rest} 分钟`;
     }
 
     form.addEventListener("submit", (event) => {
