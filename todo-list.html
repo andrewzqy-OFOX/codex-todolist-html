@@ -245,13 +245,6 @@
       background: #fbfcff;
     }
 
-    .date-label {
-      margin-top: 8px;
-      color: var(--primary-dark);
-      font-size: 13px;
-      font-weight: 700;
-    }
-
     .segmented,
     .filters {
       display: flex;
@@ -749,7 +742,6 @@
             <input class="date-input" id="selectedDate" type="date" />
             <button class="today-btn" id="goToday" type="button">今天</button>
           </div>
-          <div class="date-label" id="todayText"></div>
         </div>
 
         <div class="field">
@@ -834,7 +826,6 @@
     const confirmDay = document.querySelector("#confirmDay");
     const setupTitle = document.querySelector("#setupTitle");
     const setupSubtitle = document.querySelector("#setupSubtitle");
-    const todayText = document.querySelector("#todayText");
     const selectedDateText = document.querySelector("#selectedDateText");
     const listTitle = document.querySelector("#listTitle");
     const historyList = document.querySelector("#historyList");
@@ -1000,7 +991,6 @@
       selectedDateInput.value = selectedDate;
       goToday.hidden = selectedDate === todayKey;
       selectedDateText.textContent = selectedText;
-      todayText.textContent = selectedText;
       listTitle.textContent = selectedDate === todayKey ? "今天的任务" : `${formatDate(selectedDate, "long")} 的任务`;
       setupTitle.textContent = confirmed ? "追加任务" : selectedDate === todayKey ? "确认今日任务" : "确认这一天的任务";
       setupSubtitle.textContent = confirmed ? "新的任务会继续加入当前日期。" : "先补充或确认要做的事，确认后这里会移动到任务列表后面。";
