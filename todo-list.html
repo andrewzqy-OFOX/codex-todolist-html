@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>每日 To Do List</title>
+  <title>小葵の毎日必达</title>
+  <meta name="theme-color" content="#00a6c8" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="小葵の毎日必达" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="assets/app-icon-192.png" />
   <style>
     :root {
       --bg: #edf8fb;
@@ -129,12 +135,23 @@
       content: none;
     }
 
+    .app > header {
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.84) 43%, rgba(255, 255, 255, 0.22) 66%, rgba(255, 255, 255, 0.02) 100%),
+        url("assets/luo-tianyi-poster.jpg") right 18% top 16% / cover no-repeat,
+        var(--panel);
+    }
+
     .header {
       padding: 24px;
       display: grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: 1fr;
       gap: 18px;
       align-items: center;
+      min-height: 224px;
+      padding-right: min(38vw, 420px);
     }
 
     h1,
@@ -145,14 +162,20 @@
 
     h1 {
       display: inline-block;
-      padding: 0 0 10px;
+      padding: 0 0 12px;
       border: 0;
-      border-bottom: 4px solid var(--accent);
-      background: transparent;
+      border-bottom: 5px solid #7ef0ff;
+      background: linear-gradient(90deg, #009fbd 0%, #5d6dff 54%, #ff6fb1 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
       box-shadow: none;
-      font-size: 32px;
+      color: transparent;
+      font-family: "Yu Gothic UI", "Hiragino Maru Gothic ProN", "Meiryo", "Microsoft YaHei", sans-serif;
+      font-size: 36px;
+      font-weight: 900;
       line-height: 1.15;
       text-transform: none;
+      text-shadow: 0 8px 20px rgba(0, 166, 200, 0.16);
     }
 
     h2 {
@@ -170,9 +193,12 @@
     }
 
     .today {
-      min-width: 210px;
-      padding: 14px 16px;
-      border-radius: 16px;
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      min-width: 172px;
+      padding: 10px 12px;
+      border-radius: 14px;
       color: #ffffff;
       background: linear-gradient(135deg, var(--primary-dark), var(--primary), var(--violet));
       text-align: right;
@@ -188,8 +214,8 @@
 
     .today strong {
       display: block;
-      margin-top: 5px;
-      font-size: 20px;
+      margin-top: 3px;
+      font-size: 17px;
     }
 
     .stats {
@@ -429,7 +455,7 @@
 
     .redeem-form {
       display: grid;
-      grid-template-columns: 1fr 120px auto;
+      grid-template-columns: minmax(170px, 1.8fr) minmax(78px, 0.7fr) auto;
       gap: 10px;
       align-items: end;
     }
@@ -635,7 +661,7 @@
 
     .todo {
       display: grid;
-      grid-template-columns: auto auto 1fr auto auto;
+      grid-template-columns: auto auto 1fr auto auto auto;
       gap: 12px;
       align-items: center;
       min-height: 58px;
@@ -736,6 +762,38 @@
       box-shadow: none;
       text-shadow: none;
       cursor: pointer;
+    }
+
+    .priority-stars {
+      display: flex;
+      gap: 2px;
+      padding: 4px 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fffdf4;
+      white-space: nowrap;
+    }
+
+    .star-btn {
+      width: 22px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #c9b56a;
+      background: transparent;
+      font-size: 17px;
+      line-height: 1;
+    }
+
+    .star-btn.active {
+      color: #f3aa16;
+      text-shadow: 0 1px 0 #7d5300;
+    }
+
+    .star-btn:hover {
+      color: #ffbe28;
+      background: #fff5cf;
     }
 
     .todo-meta {
@@ -979,8 +1037,8 @@
       }
 
       .today {
-        min-width: 0;
-        text-align: left;
+        min-width: 160px;
+        text-align: right;
       }
 
       .stats {
@@ -989,6 +1047,10 @@
 
       .history-list {
         grid-template-columns: repeat(2, 1fr);
+      }
+
+      .header {
+        padding-right: min(34vw, 260px);
       }
     }
 
@@ -1026,16 +1088,30 @@
         grid-template-columns: 1fr;
       }
 
-      .todo {
-        grid-template-columns: auto auto 1fr auto;
+      .app > header {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.8) 58%, rgba(255, 255, 255, 0.35) 100%),
+          url("assets/luo-tianyi-poster.jpg") center top / cover no-repeat,
+          var(--panel);
       }
 
-      .todo.done {
-        grid-template-columns: auto 1fr auto auto;
+      .header {
+        min-height: 260px;
+        padding-right: 14px;
+        align-content: end;
+      }
+
+      .today {
+        top: 14px;
+        right: 14px;
+        min-width: 148px;
+      }
+
+      .todo {
+        grid-template-columns: auto auto minmax(0, 1fr) auto auto;
       }
 
       .todo .delete {
-        grid-column: 4;
         justify-self: end;
       }
 
@@ -1048,11 +1124,11 @@
   </style>
 </head>
 <body>
-  <section class="app" id="app" aria-label="每日 To Do List">
+  <section class="app" id="app" aria-label="小葵の毎日必达">
     <header class="panel">
       <div class="header">
         <div>
-          <h1>每日 To Do List</h1>
+          <h1>小葵の毎日必达</h1>
           <p class="subtle">重复任务每天出现，当天任务只属于选中的日期。</p>
         </div>
         <div class="today">
@@ -1137,7 +1213,7 @@
           </div>
           <div class="field">
             <label for="redeemAmount">金额</label>
-            <input class="redeem-input" id="redeemAmount" type="number" min="0.01" step="0.01" placeholder="元" />
+            <input class="redeem-input" id="redeemAmount" type="number" min="0.01" step="0.01" value="10" placeholder="10 元" />
           </div>
           <button class="add-btn" type="submit">盖章抵扣</button>
         </form>
@@ -1408,7 +1484,37 @@
     }
 
     function sortTodosByDone(items) {
-      return [...items].sort((a, b) => Number(a.done) - Number(b.done));
+      return [...items].sort((a, b) => {
+        const doneCompare = Number(a.done) - Number(b.done);
+        if (doneCompare) return doneCompare;
+        const priorityCompare = taskPriority(b) - taskPriority(a);
+        if (priorityCompare) return priorityCompare;
+        return taskPosition(a.id) - taskPosition(b.id);
+      });
+    }
+
+    function taskPriority(task) {
+      const value = Number(task.priority);
+      if (!Number.isFinite(value)) return 1;
+      return Math.min(3, Math.max(1, Math.round(value)));
+    }
+
+    function taskPosition(taskId) {
+      const index = data.tasks.findIndex((task) => task.id === taskId);
+      return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+    }
+
+    function setPriority(taskId, priority) {
+      const task = data.tasks.find((item) => item.id === taskId);
+      if (!task) return;
+      task.priority = priority;
+    }
+
+    function renderPriorityStars(todo) {
+      const priority = taskPriority(todo);
+      return [1, 2, 3].map((level) => `
+        <button class="star-btn ${level <= priority ? "active" : ""}" type="button" data-priority="${level}" aria-label="设置 ${level} 星优先级">★</button>
+      `).join("");
     }
 
     function setActiveFilter(filter) {
@@ -1442,8 +1548,8 @@
 
       list.innerHTML = items.map((todo, index) => `
         <li class="todo ${todo.done ? "done" : ""}" data-id="${todo.id}">
-          <span class="todo-index">${index + 1}</span>
           ${todo.done ? "" : '<button class="check" type="button" aria-label="标记完成">✓</button>'}
+          <span class="todo-index">${index + 1}</span>
           <div class="todo-main">
             <span class="todo-title-row">
               <span class="todo-text">${escapeHtml(todo.text)}</span>
@@ -1456,6 +1562,9 @@
             </span>
           </div>
           ${todo.done ? '<button class="done-tail" type="button" aria-label="取消完成">✓</button>' : '<span class="done-tail" aria-hidden="true"></span>'}
+          <span class="priority-stars" aria-label="任务优先级">
+            ${renderPriorityStars(todo)}
+          </span>
           <button class="delete" type="button" aria-label="删除任务">×</button>
         </li>
       `).join("");
@@ -1515,7 +1624,7 @@
       rewardEarned.textContent = formatMoney(rewards.earned);
       rewardPenalty.textContent = formatMoney(rewards.penalty);
       rewardRedeemed.textContent = formatMoney(rewards.redeemed);
-      rewardBalance.textContent = formatMoney(rewards.balance);
+      rewardBalance.textContent = formatMoney(10);
 
       const recent = [...(data.redemptions || [])]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -1685,7 +1794,8 @@
         date: currentType === "once" ? selectedDate : undefined,
         createdAt: selectedDate,
         duration: durationInput.value.trim(),
-        amount: amountInput.value.trim()
+        amount: amountInput.value.trim(),
+        priority: 1
       });
 
       input.value = "";
@@ -1711,7 +1821,7 @@
       });
 
       redeemProduct.value = "";
-      redeemAmount.value = "";
+      redeemAmount.value = "10";
       save();
       render();
     });
@@ -1722,6 +1832,10 @@
 
       if (event.target.classList.contains("check") || event.target.classList.contains("done-tail")) {
         setDone(item.dataset.id, selectedDate, !isDone({ id: item.dataset.id }, selectedDate));
+      }
+
+      if (event.target.classList.contains("star-btn")) {
+        setPriority(item.dataset.id, Number(event.target.dataset.priority));
       }
 
       if (event.target.classList.contains("delete")) {
@@ -1776,6 +1890,12 @@
       save();
       render();
     });
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+      });
+    }
 
     save();
     render();
