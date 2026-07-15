@@ -1009,6 +1009,110 @@
       background: var(--green);
     }
 
+    .celebration {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(7, 22, 42, 0.46);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s ease;
+      overflow: hidden;
+    }
+
+    .celebration.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      top: -12vh;
+      width: 10px;
+      height: 18px;
+      border-radius: 3px;
+      background: var(--confetti-color, #69dff2);
+      animation: confettiFall var(--fall-duration, 2.8s) linear forwards;
+      transform: rotate(var(--spin, 18deg));
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translate3d(0, -10vh, 0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translate3d(var(--drift, 18px), 112vh, 0) rotate(720deg);
+        opacity: 0.92;
+      }
+    }
+
+    .dance-stage {
+      position: relative;
+      z-index: 2;
+      width: min(60vw, 880px);
+      display: none;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.74);
+      border-radius: 22px;
+      background: #ffffff;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+    }
+
+    .celebration.video-ready .dance-stage {
+      display: block;
+      animation: popStage 0.38s ease both;
+    }
+
+    @keyframes popStage {
+      from {
+        transform: scale(0.92);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .dance-stage video,
+    .dance-fallback {
+      display: block;
+      width: 100%;
+      height: min(60vh, calc(60vw * 0.5625), 520px);
+      background: #101827;
+      object-fit: contain;
+    }
+
+    .dance-fallback {
+      display: grid;
+      place-items: end start;
+      padding: 22px;
+      color: #ffffff;
+      background:
+        linear-gradient(180deg, transparent 0%, rgba(4, 18, 32, 0.74) 100%),
+        url("assets/luo-tianyi-poster.jpg") center top / cover no-repeat;
+      font-weight: 800;
+    }
+
+    .dance-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(255, 255, 255, 0.76);
+      border-radius: 50%;
+      color: #ffffff;
+      background: rgba(7, 22, 42, 0.58);
+      font-size: 24px;
+      line-height: 1;
+      z-index: 3;
+    }
+
     @media (max-width: 820px) {
       .app {
         grid-template-columns: 1fr;
@@ -1039,6 +1143,15 @@
       .today {
         min-width: 160px;
         text-align: right;
+      }
+
+      .dance-stage {
+        width: min(82vw, 720px);
+      }
+
+      .dance-stage video,
+      .dance-fallback {
+        height: min(58vh, 420px);
       }
 
       .stats {
@@ -1109,6 +1222,15 @@
 
       .todo {
         grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+      }
+
+      .dance-stage {
+        width: 92vw;
+      }
+
+      .dance-stage video,
+      .dance-fallback {
+        height: min(56vh, 330px);
       }
 
       .todo .delete {
@@ -1300,6 +1422,16 @@
     </section>
   </section>
 
+  <div class="celebration" id="celebration" aria-hidden="true">
+    <div class="dance-stage" role="dialog" aria-label="全部完成彩蛋">
+      <button class="dance-close" id="closeCelebration" type="button" aria-label="关闭彩蛋">×</button>
+      <video id="danceVideo" src="assets/luo-tianyi-dance.mp4" controls playsinline preload="metadata"></video>
+      <div class="dance-fallback" id="danceFallback" hidden>
+        <span>全部完成！把舞蹈视频放到 assets/luo-tianyi-dance.mp4 后会自动播放。</span>
+      </div>
+    </div>
+  </div>
+
   <script>
     const STORAGE_KEY = "pretty-todo-list-v2";
     const LEGACY_KEY = "pretty-todo-list";
@@ -1336,12 +1468,17 @@
     const rewardPenalty = document.querySelector("#rewardPenalty");
     const rewardRedeemed = document.querySelector("#rewardRedeemed");
     const redeemList = document.querySelector("#redeemList");
+    const celebration = document.querySelector("#celebration");
+    const closeCelebration = document.querySelector("#closeCelebration");
+    const danceVideo = document.querySelector("#danceVideo");
+    const danceFallback = document.querySelector("#danceFallback");
 
     let currentFilter = "all";
     let currentType = "daily";
     const todayKey = toDateKey(new Date());
     let selectedDate = todayKey;
     let data = loadData();
+    const celebratedDates = new Set();
 
     selectedDateInput.value = selectedDate;
 
@@ -1515,6 +1652,65 @@
       return [1, 2, 3].map((level) => `
         <button class="star-btn ${level <= priority ? "active" : ""}" type="button" data-priority="${level}" aria-label="设置 ${level} 星优先级">★</button>
       `).join("");
+    }
+
+    function shouldCelebrate(before, after, dateKey) {
+      return dateKey === todayKey
+        && after.total > 0
+        && after.left === 0
+        && before.left > 0
+        && !celebratedDates.has(dateKey);
+    }
+
+    function launchCelebration(dateKey) {
+      celebratedDates.add(dateKey);
+      celebration.classList.remove("video-ready");
+      celebration.classList.add("show");
+      celebration.setAttribute("aria-hidden", "false");
+      createConfetti();
+
+      window.setTimeout(() => {
+        celebration.classList.add("video-ready");
+        playDanceVideo();
+      }, 1800);
+    }
+
+    function createConfetti() {
+      const colors = ["#69dff2", "#7d8cff", "#ff6fb1", "#ffd65a", "#18a982", "#ffffff"];
+      celebration.querySelectorAll(".confetti-piece").forEach((piece) => piece.remove());
+      for (let index = 0; index < 160; index += 1) {
+        const piece = document.createElement("span");
+        piece.className = "confetti-piece";
+        piece.style.left = `${Math.random() * 100}%`;
+        piece.style.setProperty("--confetti-color", colors[index % colors.length]);
+        piece.style.setProperty("--fall-duration", `${2.1 + Math.random() * 2.2}s`);
+        piece.style.setProperty("--drift", `${(Math.random() - 0.5) * 180}px`);
+        piece.style.setProperty("--spin", `${Math.random() * 180}deg`);
+        piece.style.animationDelay = `${Math.random() * 0.9}s`;
+        celebration.appendChild(piece);
+      }
+    }
+
+    function playDanceVideo() {
+      danceFallback.hidden = true;
+      danceVideo.hidden = false;
+      danceVideo.currentTime = 0;
+      const playPromise = danceVideo.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => {});
+      }
+    }
+
+    function closeCelebrationLayer() {
+      celebration.classList.remove("show", "video-ready");
+      celebration.setAttribute("aria-hidden", "true");
+      danceVideo.pause();
+      celebration.querySelectorAll(".confetti-piece").forEach((piece) => piece.remove());
+    }
+
+    function showDanceFallback() {
+      danceVideo.hidden = true;
+      danceFallback.hidden = false;
     }
 
     function setActiveFilter(filter) {
@@ -1829,6 +2025,7 @@
     list.addEventListener("click", (event) => {
       const item = event.target.closest(".todo");
       if (!item) return;
+      const beforeStats = dayStats(selectedDate);
 
       if (event.target.classList.contains("check") || event.target.classList.contains("done-tail")) {
         setDone(item.dataset.id, selectedDate, !isDone({ id: item.dataset.id }, selectedDate));
@@ -1845,6 +2042,10 @@
 
       save();
       render();
+
+      if (event.target.classList.contains("check") && shouldCelebrate(beforeStats, dayStats(selectedDate), selectedDate)) {
+        launchCelebration(selectedDate);
+      }
     });
 
     confirmDay.addEventListener("click", () => {
@@ -1889,6 +2090,14 @@
       tasksForDate(selectedDate).forEach((task) => setDone(task.id, selectedDate, false));
       save();
       render();
+    });
+
+    closeCelebration.addEventListener("click", closeCelebrationLayer);
+    danceVideo.addEventListener("error", showDanceFallback);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && celebration.classList.contains("show")) {
+        closeCelebrationLayer();
+      }
     });
 
     if ("serviceWorker" in navigator) {

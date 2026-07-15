@@ -1,4 +1,4 @@
-const CACHE_NAME = "xiaokui-todo-v1";
+const CACHE_NAME = "xiaokui-todo-v2";
 const APP_ASSETS = [
   "./",
   "./index.html",
