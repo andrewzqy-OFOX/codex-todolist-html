@@ -62,36 +62,25 @@
     }
 
     .app > header,
-    .app > .controls,
     .app > .list-panel,
     .app > .history {
       grid-column: 1;
     }
 
-    .reward-panel {
+    .side-stack {
       grid-column: 2;
       grid-row: 1 / span 4;
       position: sticky;
       top: 18px;
-    }
-
-    .controls {
-      order: 2;
+      display: grid;
+      gap: 16px;
     }
 
     .list-panel {
-      order: 3;
-    }
-
-    .history {
-      order: 4;
-    }
-
-    .app.confirmed .list-panel {
       order: 2;
     }
 
-    .app.confirmed .controls {
+    .history {
       order: 3;
     }
 
@@ -332,7 +321,7 @@
 
     .control-row {
       display: grid;
-      grid-template-columns: 180px 1fr 130px 120px auto;
+      grid-template-columns: 1fr;
       gap: 12px;
       align-items: end;
     }
@@ -802,14 +791,13 @@
       }
 
       .app > header,
-      .app > .controls,
       .app > .list-panel,
       .app > .history,
-      .reward-panel {
+      .side-stack {
         grid-column: 1;
       }
 
-      .reward-panel {
+      .side-stack {
         grid-row: auto;
         position: static;
       }
@@ -838,16 +826,6 @@
       }
     }
 
-    @media (min-width: 821px) and (max-width: 1080px) {
-      .control-row {
-        grid-template-columns: 180px 1fr 130px;
-      }
-
-      .control-row form {
-        grid-column: 3;
-      }
-    }
-
     @media (max-width: 520px) {
       body {
         padding: 12px;
@@ -856,7 +834,6 @@
       .header,
       .controls,
       .list-panel,
-      .reward-panel,
       .history {
         padding: 14px;
       }
@@ -935,102 +912,104 @@
 
     </header>
 
-    <aside class="panel reward-panel rewards" aria-label="奖励积分抵扣">
-      <div>
-        <h2>奖励商店</h2>
-        <p class="subtle">完成任务换一点快乐。</p>
-      </div>
+    <aside class="side-stack" aria-label="右侧工具栏">
+      <section class="panel reward-panel rewards" aria-label="奖励积分抵扣">
+        <div>
+          <h2>奖励商店</h2>
+          <p class="subtle">完成任务换一点快乐。</p>
+        </div>
 
-      <div class="reward-grid">
-        <div class="reward-card reward-balance-card">
-          <div>
-            <span>可用余额</span>
-            <strong id="rewardBalance">¥0</strong>
+        <div class="reward-grid">
+          <div class="reward-card reward-balance-card">
+            <div>
+              <span>可用余额</span>
+              <strong id="rewardBalance">¥0</strong>
+            </div>
           </div>
-        </div>
-        <div class="reward-card">
-          <span>任务奖励</span>
-          <strong id="rewardEarned">¥0</strong>
-        </div>
-        <div class="reward-card">
-          <span>规则扣款</span>
-          <strong id="rewardPenalty">¥0</strong>
-        </div>
-        <div class="reward-card">
-          <span>已抵扣</span>
-          <strong id="rewardRedeemed">¥0</strong>
-        </div>
-        <div class="reward-card">
-          <span>最近记录</span>
-          <strong>3 次</strong>
-        </div>
-      </div>
-
-      <div class="reward-rules" aria-label="奖励规则">
-        <div class="rule-line"><span>当日完成</span><strong>+2 元</strong></div>
-        <div class="rule-line"><span>连续 2 天未完成</span><strong>-3 元</strong></div>
-        <div class="rule-line"><span>连续 7 天完成</span><strong>+10 元</strong></div>
-      </div>
-
-      <form class="redeem-form" id="redeemForm">
-        <div class="field">
-          <label for="redeemProduct">抵扣产品</label>
-          <input class="redeem-input" id="redeemProduct" type="text" placeholder="漫画书 / 咖啡" autocomplete="off" />
-        </div>
-        <div class="field">
-          <label for="redeemAmount">金额</label>
-          <input class="redeem-input" id="redeemAmount" type="number" min="0.01" step="0.01" placeholder="元" />
-        </div>
-        <button class="add-btn" type="submit">盖章抵扣</button>
-      </form>
-
-      <div class="redeem-list" id="redeemList"></div>
-    </aside>
-
-    <section class="panel controls" aria-label="添加任务">
-      <div class="setup-head">
-        <div class="setup-title">
-          <strong id="setupTitle">确认今日任务</strong>
-          <span id="setupSubtitle">先补充或确认今天要做的事，确认后这里会移动到任务列表后面。</span>
-        </div>
-        <button class="confirm-btn" id="confirmDay" type="button">确认任务</button>
-      </div>
-
-      <div class="control-row">
-        <div class="field">
-          <label for="selectedDate">任务日期</label>
-          <div class="date-tools">
-            <input class="date-input" id="selectedDate" type="date" />
-            <button class="today-btn" id="goToday" type="button">今天</button>
+          <div class="reward-card">
+            <span>任务奖励</span>
+            <strong id="rewardEarned">¥0</strong>
+          </div>
+          <div class="reward-card">
+            <span>规则扣款</span>
+            <strong id="rewardPenalty">¥0</strong>
+          </div>
+          <div class="reward-card">
+            <span>已抵扣</span>
+            <strong id="rewardRedeemed">¥0</strong>
+          </div>
+          <div class="reward-card">
+            <span>最近记录</span>
+            <strong>3 次</strong>
           </div>
         </div>
 
-        <div class="field">
-          <label for="todoInput">新任务</label>
-          <input class="task-input" id="todoInput" type="text" placeholder="写下一个任务..." autocomplete="off" form="todoForm" />
+        <div class="reward-rules" aria-label="奖励规则">
+          <div class="rule-line"><span>当日完成</span><strong>+2 元</strong></div>
+          <div class="rule-line"><span>连续 2 天未完成</span><strong>-3 元</strong></div>
+          <div class="rule-line"><span>连续 7 天完成</span><strong>+10 元</strong></div>
         </div>
 
-        <div class="field">
-          <label for="durationInput">预计时长</label>
-          <input class="duration-input" id="durationInput" type="text" placeholder="如 30 分钟" form="todoForm" />
-        </div>
-
-        <div class="field">
-          <label for="amountInput">任务量</label>
-          <input class="amount-input" id="amountInput" type="text" placeholder="如 3 页 / 20 个" form="todoForm" />
-        </div>
-
-        <form id="todoForm">
-          <button class="add-btn" type="submit">添加任务</button>
+        <form class="redeem-form" id="redeemForm">
+          <div class="field">
+            <label for="redeemProduct">抵扣产品</label>
+            <input class="redeem-input" id="redeemProduct" type="text" placeholder="漫画书 / 咖啡" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="redeemAmount">金额</label>
+            <input class="redeem-input" id="redeemAmount" type="number" min="0.01" step="0.01" placeholder="元" />
+          </div>
+          <button class="add-btn" type="submit">盖章抵扣</button>
         </form>
-      </div>
 
-      <div class="segmented" aria-label="任务类型">
-        <button class="segment active" type="button" data-type="daily">每天重复</button>
-        <button class="segment" type="button" data-type="once">当天任务</button>
-      </div>
-      <div class="type-hint" id="typeHint">每天重复任务会出现在每一天，完成状态按日期单独记录。</div>
-    </section>
+        <div class="redeem-list" id="redeemList"></div>
+      </section>
+
+      <section class="panel controls" aria-label="添加任务">
+        <div class="setup-head">
+          <div class="setup-title">
+            <strong id="setupTitle">确认今日任务</strong>
+            <span id="setupSubtitle">先补充或确认今天要做的事。</span>
+          </div>
+          <button class="confirm-btn" id="confirmDay" type="button">确认任务</button>
+        </div>
+
+        <div class="control-row">
+          <div class="field">
+            <label for="selectedDate">任务日期</label>
+            <div class="date-tools">
+              <input class="date-input" id="selectedDate" type="date" />
+              <button class="today-btn" id="goToday" type="button">今天</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="todoInput">新任务</label>
+            <input class="task-input" id="todoInput" type="text" placeholder="写下一个任务..." autocomplete="off" form="todoForm" />
+          </div>
+
+          <div class="field">
+            <label for="durationInput">预计时长</label>
+            <input class="duration-input" id="durationInput" type="text" placeholder="如 30 分钟" form="todoForm" />
+          </div>
+
+          <div class="field">
+            <label for="amountInput">任务量</label>
+            <input class="amount-input" id="amountInput" type="text" placeholder="如 3 页 / 20 个" form="todoForm" />
+          </div>
+
+          <form id="todoForm">
+            <button class="add-btn" type="submit">添加任务</button>
+          </form>
+        </div>
+
+        <div class="segmented" aria-label="任务类型">
+          <button class="segment active" type="button" data-type="daily">每天重复</button>
+          <button class="segment" type="button" data-type="once">当天任务</button>
+        </div>
+        <div class="type-hint" id="typeHint">每天重复任务会出现在每一天，完成状态按日期单独记录。</div>
+      </section>
+    </aside>
 
     <section class="panel list-panel" aria-label="任务列表">
       <div class="list-head">
@@ -1267,7 +1246,7 @@
       selectedDateText.textContent = selectedText;
       listTitle.textContent = selectedDate === todayKey ? "今天的任务" : `${formatDate(selectedDate, "long")} 的任务`;
       setupTitle.textContent = confirmed ? "追加任务" : selectedDate === todayKey ? "确认今日任务" : "确认这一天的任务";
-      setupSubtitle.textContent = confirmed ? "新的任务会继续加入当前日期。" : "先补充或确认要做的事，确认后这里会移动到任务列表后面。";
+      setupSubtitle.textContent = confirmed ? "新的任务会继续加入当前日期。" : "先补充或确认要做的事，确认后这里会变成追加任务。";
       confirmDay.hidden = confirmed;
       totalCount.textContent = stats.total;
       doneCount.textContent = stats.done;
