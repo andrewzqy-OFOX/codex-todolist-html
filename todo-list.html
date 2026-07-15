@@ -53,10 +53,26 @@
     }
 
     .app {
-      width: min(980px, 100%);
+      width: min(1240px, 100%);
       margin: 0 auto;
       display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
       gap: 16px;
+      align-items: start;
+    }
+
+    .app > header,
+    .app > .controls,
+    .app > .list-panel,
+    .app > .history {
+      grid-column: 1;
+    }
+
+    .reward-panel {
+      grid-column: 2;
+      grid-row: 1 / span 4;
+      position: sticky;
+      top: 18px;
     }
 
     .controls {
@@ -205,16 +221,27 @@
     }
 
     .rewards {
-      padding: 18px 24px 24px;
-      border-top: 3px solid var(--line);
+      padding: 18px;
       display: grid;
       gap: 14px;
     }
 
     .reward-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: 1fr 1fr;
       gap: 10px;
+    }
+
+    .reward-balance-card {
+      grid-column: 1 / -1;
+      min-height: 122px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      background:
+        radial-gradient(circle, rgba(23, 23, 23, 0.11) 1px, transparent 1.5px) 0 0 / 12px 12px,
+        var(--accent);
+      transform: rotate(-1deg);
     }
 
     .reward-card {
@@ -237,6 +264,33 @@
       font-size: 20px;
     }
 
+    .reward-balance-card strong {
+      font-size: 42px;
+      line-height: 1;
+      text-shadow: 3px 3px 0 #ffffff;
+    }
+
+    .reward-rules {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border: 2px dashed var(--line);
+      border-radius: 10px;
+      background: #fffdf2;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .rule-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .rule-line strong {
+      color: var(--red);
+    }
+
     .redeem-form {
       display: grid;
       grid-template-columns: 1fr 120px auto;
@@ -256,7 +310,9 @@
       padding: 8px 10px;
       border: 2px solid var(--line);
       border-radius: 8px;
-      background: #f7f4ed;
+      background:
+        linear-gradient(90deg, transparent 0 92%, rgba(23, 23, 23, 0.12) 92% 94%, transparent 94%),
+        #f7f4ed;
       font-size: 13px;
     }
 
@@ -741,6 +797,23 @@
     }
 
     @media (max-width: 820px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .app > header,
+      .app > .controls,
+      .app > .list-panel,
+      .app > .history,
+      .reward-panel {
+        grid-column: 1;
+      }
+
+      .reward-panel {
+        grid-row: auto;
+        position: static;
+      }
+
       .header,
       .control-row,
       .list-head {
@@ -783,6 +856,7 @@
       .header,
       .controls,
       .list-panel,
+      .reward-panel,
       .history {
         padding: 14px;
       }
@@ -859,46 +933,59 @@
         <div class="progress-bar" id="progressBar"></div>
       </div>
 
-      <section class="rewards" aria-label="奖励积分抵扣">
-        <div>
-          <h2>奖励积分抵扣</h2>
-          <p class="subtle">当日完成 +2 元；连续 2 天未完成 -3 元；连续 7 天完成 +10 元。</p>
-        </div>
+    </header>
 
-        <div class="reward-grid">
-          <div class="reward-card">
+    <aside class="panel reward-panel rewards" aria-label="奖励积分抵扣">
+      <div>
+        <h2>奖励商店</h2>
+        <p class="subtle">完成任务换一点快乐。</p>
+      </div>
+
+      <div class="reward-grid">
+        <div class="reward-card reward-balance-card">
+          <div>
             <span>可用余额</span>
             <strong id="rewardBalance">¥0</strong>
           </div>
-          <div class="reward-card">
-            <span>任务奖励</span>
-            <strong id="rewardEarned">¥0</strong>
-          </div>
-          <div class="reward-card">
-            <span>规则扣款</span>
-            <strong id="rewardPenalty">¥0</strong>
-          </div>
-          <div class="reward-card">
-            <span>已抵扣</span>
-            <strong id="rewardRedeemed">¥0</strong>
-          </div>
         </div>
+        <div class="reward-card">
+          <span>任务奖励</span>
+          <strong id="rewardEarned">¥0</strong>
+        </div>
+        <div class="reward-card">
+          <span>规则扣款</span>
+          <strong id="rewardPenalty">¥0</strong>
+        </div>
+        <div class="reward-card">
+          <span>已抵扣</span>
+          <strong id="rewardRedeemed">¥0</strong>
+        </div>
+        <div class="reward-card">
+          <span>最近记录</span>
+          <strong>3 次</strong>
+        </div>
+      </div>
 
-        <form class="redeem-form" id="redeemForm">
-          <div class="field">
-            <label for="redeemProduct">抵扣产品</label>
-            <input class="redeem-input" id="redeemProduct" type="text" placeholder="例如：漫画书 / 咖啡" autocomplete="off" />
-          </div>
-          <div class="field">
-            <label for="redeemAmount">抵扣金额</label>
-            <input class="redeem-input" id="redeemAmount" type="number" min="0.01" step="0.01" placeholder="元" />
-          </div>
-          <button class="add-btn" type="submit">记录抵扣</button>
-        </form>
+      <div class="reward-rules" aria-label="奖励规则">
+        <div class="rule-line"><span>当日完成</span><strong>+2 元</strong></div>
+        <div class="rule-line"><span>连续 2 天未完成</span><strong>-3 元</strong></div>
+        <div class="rule-line"><span>连续 7 天完成</span><strong>+10 元</strong></div>
+      </div>
 
-        <div class="redeem-list" id="redeemList"></div>
-      </section>
-    </header>
+      <form class="redeem-form" id="redeemForm">
+        <div class="field">
+          <label for="redeemProduct">抵扣产品</label>
+          <input class="redeem-input" id="redeemProduct" type="text" placeholder="漫画书 / 咖啡" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="redeemAmount">金额</label>
+          <input class="redeem-input" id="redeemAmount" type="number" min="0.01" step="0.01" placeholder="元" />
+        </div>
+        <button class="add-btn" type="submit">盖章抵扣</button>
+      </form>
+
+      <div class="redeem-list" id="redeemList"></div>
+    </aside>
 
     <section class="panel controls" aria-label="添加任务">
       <div class="setup-head">
