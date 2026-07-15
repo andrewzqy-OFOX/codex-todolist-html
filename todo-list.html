@@ -487,7 +487,7 @@
 
     .todo {
       display: grid;
-      grid-template-columns: auto auto 1fr auto;
+      grid-template-columns: auto auto 1fr auto auto;
       gap: 12px;
       align-items: center;
       min-height: 58px;
@@ -566,6 +566,25 @@
       background:
         repeating-linear-gradient(-45deg, rgba(23, 23, 23, 0.04), rgba(23, 23, 23, 0.04) 4px, transparent 4px, transparent 9px),
         #ffffff;
+    }
+
+    .done-tail {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--line);
+      border-radius: 50%;
+      color: transparent;
+      background: transparent;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .todo.done .done-tail {
+      color: #ffffff;
+      background: var(--green);
+      box-shadow: 3px 3px 0 var(--accent);
     }
 
     .todo-meta {
@@ -861,11 +880,11 @@
       }
 
       .todo {
-        grid-template-columns: auto auto 1fr;
+        grid-template-columns: auto auto 1fr auto;
       }
 
       .todo .delete {
-        grid-column: 3;
+        grid-column: 4;
         justify-self: end;
       }
 
@@ -1221,9 +1240,14 @@
         done: isDone(task, selectedDate)
       }));
 
-      if (currentFilter === "active") return items.filter((todo) => !todo.done);
-      if (currentFilter === "done") return items.filter((todo) => todo.done);
-      return items;
+      const sorted = sortTodosByDone(items);
+      if (currentFilter === "active") return sorted.filter((todo) => !todo.done);
+      if (currentFilter === "done") return sorted.filter((todo) => todo.done);
+      return sorted;
+    }
+
+    function sortTodosByDone(items) {
+      return [...items].sort((a, b) => Number(a.done) - Number(b.done));
     }
 
     function setActiveFilter(filter) {
@@ -1270,6 +1294,7 @@
               ${todo.amount ? `<span class="pill">任务量 ${escapeHtml(String(todo.amount))}</span>` : ""}
             </span>
           </div>
+          <span class="done-tail" aria-label="${todo.done ? "已完成" : "未完成"}">${todo.done ? "✓" : ""}</span>
           <button class="delete" type="button" aria-label="删除任务">×</button>
         </li>
       `).join("");
