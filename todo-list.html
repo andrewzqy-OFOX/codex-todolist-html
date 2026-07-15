@@ -558,33 +558,37 @@
     }
 
     .todo.done .todo-text {
-      color: var(--muted);
+      color: #15563d;
       text-decoration: line-through;
     }
 
     .todo.done {
       background:
-        repeating-linear-gradient(-45deg, rgba(23, 23, 23, 0.04), rgba(23, 23, 23, 0.04) 4px, transparent 4px, transparent 9px),
-        #ffffff;
+        repeating-linear-gradient(-45deg, rgba(47, 143, 91, 0.1), rgba(47, 143, 91, 0.1) 4px, transparent 4px, transparent 9px),
+        #e8f7f1;
+      border-color: var(--green);
     }
 
     .done-tail {
-      width: 32px;
-      height: 32px;
+      min-width: 34px;
+      height: 34px;
       display: grid;
       place-items: center;
-      border: 2px solid var(--line);
-      border-radius: 50%;
-      color: transparent;
+      border: 0;
+      border-radius: 0;
+      color: var(--green);
       background: transparent;
+      font-size: 30px;
       font-weight: 900;
       line-height: 1;
     }
 
     .todo.done .done-tail {
-      color: #ffffff;
-      background: var(--green);
-      box-shadow: 3px 3px 0 var(--accent);
+      color: var(--green);
+      background: transparent;
+      box-shadow: none;
+      text-shadow: 2px 2px 0 #ffffff;
+      cursor: pointer;
     }
 
     .todo-meta {
@@ -881,6 +885,10 @@
 
       .todo {
         grid-template-columns: auto auto 1fr auto;
+      }
+
+      .todo.done {
+        grid-template-columns: auto 1fr auto auto;
       }
 
       .todo .delete {
@@ -1282,7 +1290,7 @@
       list.innerHTML = items.map((todo, index) => `
         <li class="todo ${todo.done ? "done" : ""}" data-id="${todo.id}">
           <span class="todo-index">${index + 1}</span>
-          <button class="check" type="button" aria-label="切换完成状态">✓</button>
+          ${todo.done ? "" : '<button class="check" type="button" aria-label="标记完成">✓</button>'}
           <div class="todo-main">
             <span class="todo-title-row">
               <span class="todo-text">${escapeHtml(todo.text)}</span>
@@ -1294,7 +1302,7 @@
               ${todo.amount ? `<span class="pill">任务量 ${escapeHtml(String(todo.amount))}</span>` : ""}
             </span>
           </div>
-          <span class="done-tail" aria-label="${todo.done ? "已完成" : "未完成"}">${todo.done ? "✓" : ""}</span>
+          ${todo.done ? '<button class="done-tail" type="button" aria-label="取消完成">✓</button>' : '<span class="done-tail" aria-hidden="true"></span>'}
           <button class="delete" type="button" aria-label="删除任务">×</button>
         </li>
       `).join("");
@@ -1559,7 +1567,7 @@
       const item = event.target.closest(".todo");
       if (!item) return;
 
-      if (event.target.classList.contains("check")) {
+      if (event.target.classList.contains("check") || event.target.classList.contains("done-tail")) {
         setDone(item.dataset.id, selectedDate, !isDone({ id: item.dataset.id }, selectedDate));
       }
 
