@@ -33,11 +33,9 @@
       color: var(--text);
       font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at 12% 16%, rgba(105, 223, 242, 0.45), transparent 28%),
-        radial-gradient(circle at 82% 10%, rgba(125, 140, 255, 0.2), transparent 24%),
-        linear-gradient(135deg, rgba(0, 166, 200, 0.12), transparent 42%),
-        linear-gradient(90deg, rgba(0, 166, 200, 0.08) 1px, transparent 1px) 0 0 / 52px 52px,
-        linear-gradient(rgba(0, 166, 200, 0.06) 1px, transparent 1px) 0 0 / 52px 52px,
+        linear-gradient(90deg, rgba(237, 248, 251, 0.94), rgba(237, 248, 251, 0.7), rgba(237, 248, 251, 0.95)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(0, 166, 200, 0.18)),
+        url("assets/luo-tianyi-poster.jpg") center top / cover fixed,
         var(--bg);
     }
 
@@ -242,6 +240,15 @@
       gap: 14px;
     }
 
+    .reward-panel {
+      padding-top: 22px;
+    }
+
+    .reward-panel > div:first-child {
+      padding-right: 84px;
+      min-height: 58px;
+    }
+
     .reward-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -261,36 +268,36 @@
     }
 
     .idol-piggy {
-      position: relative;
-      min-height: 116px;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background:
-        radial-gradient(circle at 28% 20%, rgba(105, 223, 242, 0.45), transparent 24%),
-        linear-gradient(135deg, #ffffff, #e7fbff);
+      position: absolute;
+      right: 16px;
+      top: 14px;
+      width: 74px;
+      height: 58px;
+      pointer-events: none;
     }
 
     .idol-piggy::before {
       content: "";
-      width: 118px;
-      height: 72px;
-      border: 4px solid var(--primary);
-      border-radius: 54px 58px 44px 48px;
-      background: linear-gradient(145deg, #f9feff, #caeff7);
-      box-shadow: inset -10px -8px 0 rgba(0, 166, 200, 0.12);
+      position: absolute;
+      left: 5px;
+      top: 14px;
+      width: 54px;
+      height: 34px;
+      border: 2px solid #9b6a12;
+      border-radius: 30px 32px 24px 26px;
+      background: linear-gradient(145deg, #ffe88a, #e8ad22);
+      box-shadow: inset -7px -6px 0 rgba(155, 106, 18, 0.18), 0 8px 16px rgba(145, 104, 26, 0.18);
     }
 
     .idol-piggy::after {
-      content: "♪";
+      content: "";
       position: absolute;
-      right: 26px;
-      top: 14px;
-      color: var(--violet);
-      font-size: 34px;
-      font-weight: 900;
+      left: 28px;
+      top: 17px;
+      width: 20px;
+      height: 3px;
+      border-radius: 999px;
+      background: #6e4a0c;
     }
 
     .pig-ear,
@@ -304,24 +311,24 @@
     }
 
     .pig-ear {
-      left: 78px;
-      top: 22px;
-      width: 20px;
-      height: 20px;
-      border: 4px solid var(--primary);
+      left: 16px;
+      top: 10px;
+      width: 11px;
+      height: 11px;
+      border: 2px solid #9b6a12;
       border-right: 0;
       border-bottom: 0;
-      border-radius: 12px 0 0 0;
+      border-radius: 7px 0 0 0;
       transform: rotate(16deg);
-      background: #f9feff;
+      background: #ffe88a;
     }
 
     .pig-tail {
-      right: 62px;
-      top: 54px;
-      width: 22px;
-      height: 22px;
-      border: 4px solid var(--primary);
+      right: 6px;
+      top: 28px;
+      width: 13px;
+      height: 13px;
+      border: 2px solid #9b6a12;
       border-left-color: transparent;
       border-bottom-color: transparent;
       border-radius: 50%;
@@ -329,47 +336,47 @@
     }
 
     .pig-eye {
-      left: 106px;
-      top: 58px;
-      width: 7px;
-      height: 7px;
+      left: 28px;
+      top: 29px;
+      width: 4px;
+      height: 4px;
       border-radius: 50%;
-      background: var(--primary-dark);
+      background: #6e4a0c;
     }
 
     .pig-nose {
-      left: 72px;
-      top: 60px;
-      width: 18px;
-      height: 12px;
+      left: 7px;
+      top: 31px;
+      width: 12px;
+      height: 8px;
       border-radius: 999px;
-      background: var(--accent);
+      background: #fff4b4;
       box-shadow: inset 5px 0 0 rgba(255, 255, 255, 0.75);
     }
 
     .pig-slot {
-      left: 126px;
-      top: 42px;
-      width: 38px;
-      height: 5px;
+      left: 28px;
+      top: 20px;
+      width: 20px;
+      height: 3px;
       border-radius: 999px;
-      background: var(--primary-dark);
+      background: #6e4a0c;
     }
 
     .pig-leg {
-      bottom: 22px;
-      width: 18px;
-      height: 12px;
+      bottom: 7px;
+      width: 10px;
+      height: 7px;
       border-radius: 0 0 8px 8px;
-      background: var(--primary);
+      background: #b87f19;
     }
 
     .pig-leg.one {
-      left: 116px;
+      left: 22px;
     }
 
     .pig-leg.two {
-      right: 108px;
+      right: 22px;
     }
 
     .reward-card {
