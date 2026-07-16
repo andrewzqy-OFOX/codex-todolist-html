@@ -321,7 +321,7 @@
       overflow: hidden;
       border: 2px solid #ffffff;
       border-radius: 50%;
-      background: url("assets/luo-tianyi-avatar.png") center top / cover no-repeat;
+      background: url("assets/luo-tianyi-shop.png") center top / cover no-repeat;
       box-shadow: 0 8px 22px rgba(0, 136, 176, 0.22);
       pointer-events: none;
     }
@@ -894,16 +894,22 @@
 
     .history-list {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(7, 1fr);
       gap: 8px;
     }
 
     .day-card {
-      min-height: 136px;
-      padding: 16px;
+      min-height: 92px;
+      padding: 10px;
       border: 1px solid var(--line);
       border-radius: 14px;
       background: #ffffff;
+    }
+
+    .day-card.summary {
+      grid-column: 1 / -1;
+      min-height: 136px;
+      padding: 16px;
     }
 
     .day-card.flower {
@@ -940,10 +946,15 @@
     }
 
     .day-rate {
-      margin-top: 10px;
+      margin-top: 8px;
       color: var(--primary);
-      font-size: 34px;
+      font-size: 18px;
       font-weight: 800;
+    }
+
+    .day-card.summary .day-rate {
+      margin-top: 10px;
+      font-size: 34px;
     }
 
     .reward-badge {
@@ -1172,6 +1183,10 @@
         gap: 8px;
       }
 
+      .history-list {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
       .redeem-form {
         grid-template-columns: 1fr;
       }
@@ -1247,7 +1262,7 @@
       }
 
       .stats {
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: repeat(4, 1fr);
       }
 
       .history-list {
@@ -1286,7 +1301,7 @@
       .stats,
       .reward-grid,
       .history-list {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
       }
 
       .redeem-form {
@@ -1488,7 +1503,6 @@
           <button class="filter active" type="button" data-filter="all">全部</button>
           <button class="filter" type="button" data-filter="active">未完成</button>
           <button class="filter" type="button" data-filter="done">已完成</button>
-          <button class="clear-btn" id="clearDone" type="button">清除完成</button>
         </div>
       </div>
 
@@ -1542,7 +1556,6 @@
     const leftCount = document.querySelector("#leftCount");
     const completionRate = document.querySelector("#completionRate");
     const progressBar = document.querySelector("#progressBar");
-    const clearDone = document.querySelector("#clearDone");
     const goToday = document.querySelector("#goToday");
     const confirmDay = document.querySelector("#confirmDay");
     const setupTitle = document.querySelector("#setupTitle");
@@ -1563,10 +1576,11 @@
     const danceFallback = document.querySelector("#danceFallback");
     const BILIBILI_DANCE_VIDEOS = [
       { bvid: "BV1kXf8BvEPe", title: "洛天依 MMD 勾指起誓" },
-      { bvid: "BV17oNH6GEd2", title: "洛天依十四周年 非玩家角色" },
-      { bvid: "BV1CS4y1f7pN", title: "洛天依 我的悲伤是水做的" },
-      { bvid: "BV1qTNP6QEuS", title: "霜雪千年 洛天依十四周年" },
-      { bvid: "BV1Wz4y1U7fF", title: "洛天依 66CCFF" }
+      { bvid: "BV1Wz4y1U7fF", title: "洛天依 66CCFF 全息演唱会" },
+      { bvid: "BV1A4411s7D2", title: "洛天依 MMD 勾指起誓" },
+      { bvid: "BV1CS4y1f7pN", title: "洛天依 4K 我的悲伤是水做的" },
+      { bvid: "BV1VRypY6E7C", title: "洛天依 MMD Specialist" },
+      { bvid: "BV1Ds41117VZ", title: "普通 disco 洛天依 MMD" }
     ];
 
     let currentFilter = "all";
@@ -1908,7 +1922,7 @@
 
       if (!stats.total) {
         historyList.innerHTML = `
-          <article class="day-card rest">
+          <article class="day-card summary rest">
             <div class="day-date">
               <span>最近 7 天总计</span>
             </div>
@@ -1922,8 +1936,8 @@
         return;
       }
 
-      historyList.innerHTML = `
-        <article class="day-card ${status}">
+      const summaryCard = `
+        <article class="day-card summary ${status}">
           <div class="day-date">
             <span>最近 7 天总计</span>
             <span class="today-badge">${formatDate(days[6])} - ${formatDate(days[0])}</span>
@@ -1937,6 +1951,31 @@
           <div class="mini-progress"><span style="width: ${rate}%"></span></div>
         </article>
       `;
+
+      const dailyCards = days.map((dateKey) => {
+        const day = isConfirmed(dateKey) ? confirmedDayStats(dateKey) : { total: 0, done: 0, left: 0 };
+        const dayRate = day.total ? Math.round((day.done / day.total) * 100) : 0;
+        const dayStatus = historyStatus(day);
+        const dayReward = historyReward(dayStatus);
+
+        return `
+          <article class="day-card ${dayStatus}">
+            <div class="day-date">
+              <span>${formatDate(dateKey)}</span>
+              ${dateKey === todayKey ? '<span class="today-badge">今天</span>' : ''}
+            </div>
+            <div class="day-rate">${dayRate}%</div>
+            <div class="reward-badge ${dayStatus}">
+              <span class="reward-mark">${dayReward.mark}</span>
+              <span>${day.total ? dayReward.label : "暂无记录"}</span>
+            </div>
+            <div class="mini-stats">一共 ${day.total} 项<br />完成 ${day.done} 项，未完成 ${day.left} 项</div>
+            <div class="mini-progress"><span style="width: ${dayRate}%"></span></div>
+          </article>
+        `;
+      }).join("");
+
+      historyList.innerHTML = summaryCard + dailyCards;
     }
 
     function renderRewards() {
@@ -2208,12 +2247,6 @@
         setActiveFilter(button.dataset.filter);
         render();
       });
-    });
-
-    clearDone.addEventListener("click", () => {
-      tasksForDate(selectedDate).forEach((task) => setDone(task.id, selectedDate, false));
-      save();
-      render();
     });
 
     closeCelebration.addEventListener("click", closeCelebrationLayer);
