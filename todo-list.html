@@ -670,9 +670,9 @@
 
     .todo {
       display: grid;
-      grid-template-columns: auto auto minmax(0, 1fr) auto auto auto;
+      grid-template-columns: auto auto minmax(0, 1fr);
       gap: 12px;
-      align-items: center;
+      align-items: start;
       min-height: 58px;
       padding: 10px 12px;
       border: 1px solid var(--line);
@@ -682,12 +682,14 @@
     }
 
     .todo.done {
-      grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+      grid-template-columns: auto minmax(0, 1fr) auto;
     }
 
     .todo-index {
       width: 28px;
       height: 28px;
+      min-width: 28px;
+      box-sizing: border-box;
       display: grid;
       place-items: center;
       border: 1px solid var(--primary);
@@ -702,8 +704,11 @@
     .check {
       width: 28px;
       height: 28px;
+      min-width: 28px;
+      box-sizing: border-box;
       display: grid;
       place-items: center;
+      padding: 0;
       border: 1px solid var(--primary);
       border-radius: 50%;
       color: transparent;
@@ -732,22 +737,16 @@
     }
 
     .todo-title-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 12px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
       min-width: 0;
     }
 
     .todo-duration {
-      flex: 0 0 auto;
-      padding: 3px 8px;
       border: 1px solid #a9c7d8;
-      border-radius: 999px;
       background: #e8fbff;
-      font-size: 12px;
-      font-weight: 800;
-      white-space: nowrap;
     }
 
     .todo.done .todo-text {
@@ -765,6 +764,7 @@
       height: 34px;
       display: grid;
       place-items: center;
+      align-self: start;
       border: 0;
       border-radius: 0;
       color: var(--green);
@@ -785,16 +785,24 @@
     .priority-stars {
       display: flex;
       gap: 2px;
-      padding: 4px 6px;
+      padding: 2px 5px;
       border: 1px solid var(--line);
       border-radius: 999px;
       background: #fffdf4;
       white-space: nowrap;
     }
 
+    .todo-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+      min-width: max-content;
+    }
+
     .star-btn {
-      width: 22px;
-      height: 24px;
+      width: 20px;
+      height: 22px;
       display: grid;
       place-items: center;
       border-radius: 50%;
@@ -816,17 +824,12 @@
 
     .todo-meta {
       display: flex;
-      flex-wrap: nowrap;
-      gap: 6px;
+      flex-wrap: wrap;
+      gap: 4px;
       min-width: 0;
-      overflow-x: auto;
-      scrollbar-width: none;
       color: var(--muted);
-      font-size: 12px;
-    }
-
-    .todo-meta::-webkit-scrollbar {
-      display: none;
+      font-size: 11px;
+      line-height: 1.35;
     }
 
     .task-summary {
@@ -848,7 +851,7 @@
     }
 
     .pill {
-      padding: 2px 7px;
+      padding: 2px 6px;
       border: 1px solid var(--line);
       border-radius: 999px;
       background: var(--soft);
@@ -866,12 +869,13 @@
     }
 
     .delete {
-      width: 34px;
-      height: 34px;
+      width: 28px;
+      height: 28px;
+      padding: 0;
       border-radius: 10px;
       color: #9aa6b8;
       background: transparent;
-      font-size: 22px;
+      font-size: 20px;
       line-height: 1;
     }
 
@@ -1211,12 +1215,12 @@
       }
 
       .todo {
-        grid-template-columns: auto auto minmax(0, 1fr) auto auto auto;
+        grid-template-columns: auto auto minmax(0, 1fr);
         gap: 8px;
       }
 
       .todo.done {
-        grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+        grid-template-columns: auto minmax(0, 1fr) auto;
       }
 
       .todo .done-tail {
@@ -1225,12 +1229,13 @@
       }
 
       .priority-stars {
-        padding: 3px 4px;
+        padding: 2px 3px;
       }
 
       .star-btn {
-        width: 18px;
-        font-size: 15px;
+        width: 16px;
+        height: 20px;
+        font-size: 14px;
       }
 
       .dance-stage {
@@ -1351,11 +1356,11 @@
       }
 
       .todo {
-        grid-template-columns: auto auto minmax(0, 1fr) auto auto auto;
+        grid-template-columns: auto auto minmax(0, 1fr);
       }
 
       .todo.done {
-        grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+        grid-template-columns: auto minmax(0, 1fr) auto;
       }
 
       .dance-stage {
@@ -1372,7 +1377,15 @@
       }
 
       .todo-title-row {
-        gap: 6px;
+        gap: 4px;
+      }
+
+      .todo-meta {
+        font-size: 10.5px;
+      }
+
+      .pill {
+        padding: 2px 5px;
       }
     }
   </style>
@@ -1918,19 +1931,21 @@
           <div class="todo-main">
             <span class="todo-title-row">
               <span class="todo-text">${escapeHtml(todo.text)}</span>
-              ${taskDuration(todo) ? `<span class="todo-duration">${escapeHtml(taskDuration(todo))}</span>` : ""}
+              <span class="todo-actions">
+                <span class="priority-stars" aria-label="任务优先级">
+                  ${renderPriorityStars(todo)}
+                </span>
+                <button class="delete" type="button" aria-label="删除任务">×</button>
+              </span>
             </span>
             <span class="todo-meta">
               <span class="pill ${todo.type === "daily" ? "daily" : "once"}">${todo.type === "daily" ? "每天重复" : "当天任务"}</span>
-              <span class="pill">${todo.type === "daily" ? "每日统计" : escapeHtml(todo.date)}</span>
+              ${todo.type === "once" ? `<span class="pill">${escapeHtml(todo.date)}</span>` : ""}
+              ${taskDuration(todo) ? `<span class="pill todo-duration">预计时长 ${escapeHtml(taskDuration(todo))}</span>` : ""}
               ${todo.amount ? `<span class="pill">任务量 ${escapeHtml(String(todo.amount))}</span>` : ""}
             </span>
           </div>
-          ${todo.done ? '<button class="done-tail" type="button" aria-label="取消完成">✓</button>' : '<span class="done-tail" aria-hidden="true"></span>'}
-          <span class="priority-stars" aria-label="任务优先级">
-            ${renderPriorityStars(todo)}
-          </span>
-          <button class="delete" type="button" aria-label="删除任务">×</button>
+          ${todo.done ? '<button class="done-tail" type="button" aria-label="取消完成">✓</button>' : ""}
         </li>
       `).join("");
 
