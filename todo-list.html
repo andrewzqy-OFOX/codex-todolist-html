@@ -670,7 +670,7 @@
 
     .todo {
       display: grid;
-      grid-template-columns: auto auto 1fr auto auto auto;
+      grid-template-columns: auto auto minmax(0, 1fr) auto auto auto;
       gap: 12px;
       align-items: center;
       min-height: 58px;
@@ -679,6 +679,10 @@
       border-radius: 16px;
       background: #ffffff;
       box-shadow: none;
+    }
+
+    .todo.done {
+      grid-template-columns: auto minmax(0, 1fr) auto auto auto;
     }
 
     .todo-index {
@@ -716,10 +720,14 @@
       min-width: 0;
       display: grid;
       gap: 4px;
+      overflow: hidden;
     }
 
     .todo-text {
-      overflow-wrap: anywhere;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       line-height: 1.45;
     }
 
@@ -728,6 +736,7 @@
       justify-content: space-between;
       align-items: baseline;
       gap: 12px;
+      min-width: 0;
     }
 
     .todo-duration {
@@ -807,10 +816,17 @@
 
     .todo-meta {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 6px;
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
       color: var(--muted);
       font-size: 12px;
+    }
+
+    .todo-meta::-webkit-scrollbar {
+      display: none;
     }
 
     .task-summary {
@@ -836,6 +852,7 @@
       border: 1px solid var(--line);
       border-radius: 999px;
       background: var(--soft);
+      white-space: nowrap;
     }
 
     .pill.daily {
@@ -1194,8 +1211,12 @@
       }
 
       .todo {
-        grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+        grid-template-columns: auto auto minmax(0, 1fr) auto auto auto;
         gap: 8px;
+      }
+
+      .todo.done {
+        grid-template-columns: auto minmax(0, 1fr) auto auto auto;
       }
 
       .todo .done-tail {
@@ -1330,7 +1351,11 @@
       }
 
       .todo {
-        grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+        grid-template-columns: auto auto minmax(0, 1fr) auto auto auto;
+      }
+
+      .todo.done {
+        grid-template-columns: auto minmax(0, 1fr) auto auto auto;
       }
 
       .dance-stage {
@@ -1347,8 +1372,6 @@
       }
 
       .todo-title-row {
-        align-items: flex-start;
-        flex-direction: column;
         gap: 6px;
       }
     }
