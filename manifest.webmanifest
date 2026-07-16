@@ -12,7 +12,8 @@
     {
       "src": "favicon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "assets/app-icon-512.png",
