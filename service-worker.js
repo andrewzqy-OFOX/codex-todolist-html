@@ -1,10 +1,11 @@
-const CACHE_NAME = "xiaokui-todo-v3";
+const CACHE_NAME = "xiaokui-todo-v4";
 const APP_ASSETS = [
   "./",
   "./index.html",
   "./todo-list.html",
   "./manifest.webmanifest",
   "./assets/luo-tianyi-poster.jpg",
+  "./assets/luo-tianyi-avatar.png",
   "./assets/app-icon-192.png",
   "./assets/app-icon-512.png"
 ];

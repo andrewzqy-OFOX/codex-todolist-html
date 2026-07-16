@@ -95,8 +95,11 @@
     }
 
     .app > header,
-    .app > .list-panel,
     .app > .history {
+      grid-column: 1;
+    }
+
+    .app > .list-panel {
       grid-column: 1;
     }
 
@@ -220,7 +223,7 @@
 
     .stats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 10px;
       padding: 0 24px 24px;
     }
@@ -242,6 +245,22 @@
       display: block;
       margin-top: 6px;
       font-size: 24px;
+    }
+
+    .stat.rate {
+      color: #ffffff;
+      border-color: #d87715;
+      background: linear-gradient(135deg, #ffae36, #ef7d22);
+      box-shadow: inset 0 -4px 0 rgba(120, 59, 0, 0.18);
+    }
+
+    .stat.rate span {
+      color: rgba(255, 255, 255, 0.82);
+    }
+
+    .stat.rate strong {
+      color: #ffffff;
+      font-size: 28px;
     }
 
     .progress {
@@ -271,7 +290,7 @@
     }
 
     .reward-panel > div:first-child {
-      padding-right: 84px;
+      padding-right: 96px;
       min-height: 58px;
     }
 
@@ -295,35 +314,24 @@
 
     .idol-piggy {
       position: absolute;
-      right: 16px;
-      top: 14px;
-      width: 74px;
-      height: 58px;
+      right: 14px;
+      top: 12px;
+      width: 78px;
+      height: 78px;
+      overflow: hidden;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      background: url("assets/luo-tianyi-avatar.png") center top / cover no-repeat;
+      box-shadow: 0 8px 22px rgba(0, 136, 176, 0.22);
       pointer-events: none;
     }
 
     .idol-piggy::before {
-      content: "";
-      position: absolute;
-      left: 5px;
-      top: 14px;
-      width: 54px;
-      height: 34px;
-      border: 2px solid #9b6a12;
-      border-radius: 30px 32px 24px 26px;
-      background: linear-gradient(145deg, #ffe88a, #e8ad22);
-      box-shadow: inset -7px -6px 0 rgba(155, 106, 18, 0.18), 0 8px 16px rgba(145, 104, 26, 0.18);
+      content: none;
     }
 
     .idol-piggy::after {
-      content: "";
-      position: absolute;
-      left: 28px;
-      top: 17px;
-      width: 20px;
-      height: 3px;
-      border-radius: 999px;
-      background: #6e4a0c;
+      content: none;
     }
 
     .pig-ear,
@@ -332,8 +340,7 @@
     .pig-nose,
     .pig-slot,
     .pig-leg {
-      position: absolute;
-      display: block;
+      display: none;
     }
 
     .pig-ear {
@@ -887,13 +894,13 @@
 
     .history-list {
       display: grid;
-      grid-template-columns: repeat(7, 1fr);
+      grid-template-columns: 1fr;
       gap: 8px;
     }
 
     .day-card {
-      min-height: 92px;
-      padding: 10px;
+      min-height: 136px;
+      padding: 16px;
       border: 1px solid var(--line);
       border-radius: 14px;
       background: #ffffff;
@@ -933,9 +940,9 @@
     }
 
     .day-rate {
-      margin-top: 8px;
+      margin-top: 10px;
       color: var(--primary);
-      font-size: 18px;
+      font-size: 34px;
       font-weight: 800;
     }
 
@@ -1122,6 +1129,20 @@
         width: 100%;
         grid-template-columns: minmax(0, 1fr) clamp(260px, 36vw, 300px);
         gap: 12px;
+      }
+
+      .app > header {
+        grid-column: 1 / -1;
+      }
+
+      .app > .list-panel,
+      .app > .history {
+        grid-column: 1;
+      }
+
+      .side-stack {
+        grid-column: 2;
+        grid-row: 2 / span 3;
       }
 
       .side-stack {
@@ -1343,6 +1364,10 @@
           <span>未完成</span>
           <strong id="leftCount">0</strong>
         </div>
+        <div class="stat rate">
+          <span>完成率</span>
+          <strong id="completionRate">0%</strong>
+        </div>
       </div>
 
       <div class="progress" aria-label="完成进度">
@@ -1358,15 +1383,7 @@
           <p class="subtle">完成任务换一点快乐。</p>
         </div>
 
-        <div class="idol-piggy" aria-label="储钱小猪">
-          <span class="pig-ear"></span>
-          <span class="pig-tail"></span>
-          <span class="pig-eye"></span>
-          <span class="pig-nose"></span>
-          <span class="pig-slot"></span>
-          <span class="pig-leg one"></span>
-          <span class="pig-leg two"></span>
-        </div>
+        <div class="idol-piggy" aria-label="洛天依形象"></div>
 
         <div class="reward-grid">
           <div class="reward-card reward-balance-card">
@@ -1523,6 +1540,7 @@
     const totalCount = document.querySelector("#totalCount");
     const doneCount = document.querySelector("#doneCount");
     const leftCount = document.querySelector("#leftCount");
+    const completionRate = document.querySelector("#completionRate");
     const progressBar = document.querySelector("#progressBar");
     const clearDone = document.querySelector("#clearDone");
     const goToday = document.querySelector("#goToday");
@@ -1677,6 +1695,17 @@
       const tasks = data.tasks.filter((task) => task.type === "once" && task.date === dateKey);
       const done = tasks.filter((task) => isDone(task, dateKey)).length;
       return { total: tasks.length, done, left: tasks.length - done };
+    }
+
+    function recentSevenDayStats(days) {
+      return days.reduce((sum, dateKey) => {
+        if (!isConfirmed(dateKey)) return sum;
+        const stats = confirmedDayStats(dateKey);
+        sum.total += stats.total;
+        sum.done += stats.done;
+        sum.left += stats.left;
+        return sum;
+      }, { total: 0, done: 0, left: 0 });
     }
 
     function isConfirmed(dateKey) {
@@ -1838,6 +1867,7 @@
       totalCount.textContent = stats.total;
       doneCount.textContent = stats.done;
       leftCount.textContent = stats.left;
+      completionRate.textContent = `${completion}%`;
       progressBar.style.width = `${completion}%`;
       taskSummary.innerHTML = renderDurationSummary(tasksForDate(selectedDate));
       renderRewards();
@@ -1870,49 +1900,43 @@
     }
 
     function renderHistory() {
-      const days = Array.from({ length: 7 }, (_, index) => addDays(selectedDate, -index))
-        .filter((dateKey) => isConfirmed(dateKey));
+      const days = Array.from({ length: 7 }, (_, index) => addDays(selectedDate, -index));
+      const stats = recentSevenDayStats(days);
+      const rate = stats.total ? Math.round((stats.done / stats.total) * 100) : 0;
+      const status = historyStatus(stats);
+      const reward = historyReward(status);
 
-      if (!days.length) {
+      if (!stats.total) {
         historyList.innerHTML = `
           <article class="day-card rest">
             <div class="day-date">
-              <span>暂无记录</span>
+              <span>最近 7 天总计</span>
             </div>
             <div class="reward-badge rest">
               <span class="reward-mark">休</span>
-              <span>确认后显示</span>
+              <span>暂无记录</span>
             </div>
-            <div class="mini-stats">确认某一天的任务后，这里会显示当天任务统计。</div>
+            <div class="mini-stats">最近 7 天还没有已确认的当天任务。</div>
           </article>
         `;
         return;
       }
 
-      historyList.innerHTML = days.map((dateKey) => {
-        const stats = confirmedDayStats(dateKey);
-        const rate = stats.total ? Math.round((stats.done / stats.total) * 100) : 0;
-        const doneText = `完成 ${stats.done}`;
-        const leftText = `未完成 ${stats.left}`;
-        const status = historyStatus(stats);
-        const reward = historyReward(status);
-
-        return `
-          <article class="day-card ${status}">
-            <div class="day-date">
-              <span>${formatDate(dateKey)}</span>
-              ${dateKey === todayKey ? '<span class="today-badge">今天</span>' : ''}
-            </div>
-            <div class="day-rate">${rate}%</div>
-            <div class="reward-badge ${status}">
-              <span class="reward-mark">${reward.mark}</span>
-              <span>${reward.label}</span>
-            </div>
-            <div class="mini-stats">${doneText}<br />${leftText}</div>
-            <div class="mini-progress"><span style="width: ${rate}%"></span></div>
-          </article>
-        `;
-      }).join("");
+      historyList.innerHTML = `
+        <article class="day-card ${status}">
+          <div class="day-date">
+            <span>最近 7 天总计</span>
+            <span class="today-badge">${formatDate(days[6])} - ${formatDate(days[0])}</span>
+          </div>
+          <div class="day-rate">${rate}%</div>
+          <div class="reward-badge ${status}">
+            <span class="reward-mark">${reward.mark}</span>
+            <span>${reward.label}</span>
+          </div>
+          <div class="mini-stats">一共 ${stats.total} 项<br />完成 ${stats.done} 项，未完成 ${stats.left} 项</div>
+          <div class="mini-progress"><span style="width: ${rate}%"></span></div>
+        </article>
+      `;
     }
 
     function renderRewards() {
@@ -1920,7 +1944,7 @@
       rewardEarned.textContent = formatMoney(rewards.earned);
       rewardPenalty.textContent = formatMoney(rewards.penalty);
       rewardRedeemed.textContent = formatMoney(rewards.redeemed);
-      rewardBalance.textContent = formatMoney(10);
+      rewardBalance.textContent = formatMoney(rewards.balance);
 
       const recent = [...(data.redemptions || [])]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -1970,7 +1994,7 @@
         earned,
         penalty,
         redeemed,
-        balance: earned - penalty - redeemed
+        balance: 10 + earned - penalty - redeemed
       };
     }
 
