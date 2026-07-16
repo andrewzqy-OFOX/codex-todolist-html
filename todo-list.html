@@ -1078,13 +1078,13 @@
       }
     }
 
-    .dance-stage video,
+    .dance-stage iframe,
     .dance-fallback {
       display: block;
       width: 100%;
       height: min(60vh, calc(60vw * 0.5625), 520px);
       background: #101827;
-      object-fit: contain;
+      border: 0;
     }
 
     .dance-fallback {
@@ -1111,6 +1111,45 @@
       font-size: 24px;
       line-height: 1;
       z-index: 3;
+    }
+
+    @media (min-width: 821px) and (max-width: 1180px) {
+      body {
+        padding: 16px 12px;
+      }
+
+      .app {
+        width: 100%;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 12px;
+      }
+
+      .side-stack {
+        top: 12px;
+        gap: 12px;
+      }
+
+      .header {
+        min-height: 208px;
+        padding-right: min(34vw, 320px);
+      }
+
+      .stats {
+        gap: 8px;
+      }
+
+      .todo {
+        gap: 10px;
+      }
+
+      .dance-stage {
+        width: min(72vw, 780px);
+      }
+
+      .dance-stage iframe,
+      .dance-fallback {
+        height: min(60vh, calc(72vw * 0.5625), 438px);
+      }
     }
 
     @media (max-width: 820px) {
@@ -1146,12 +1185,12 @@
       }
 
       .dance-stage {
-        width: min(82vw, 720px);
+        width: min(92vw, calc(60vh * 1.7778));
       }
 
-      .dance-stage video,
+      .dance-stage iframe,
       .dance-fallback {
-        height: min(58vh, 420px);
+        height: min(60vh, calc(92vw * 0.5625), 420px);
       }
 
       .stats {
@@ -1228,9 +1267,9 @@
         width: 92vw;
       }
 
-      .dance-stage video,
+      .dance-stage iframe,
       .dance-fallback {
-        height: min(56vh, 330px);
+        height: min(56vh, calc(92vw * 0.5625), 330px);
       }
 
       .todo .delete {
@@ -1425,9 +1464,9 @@
   <div class="celebration" id="celebration" aria-hidden="true">
     <div class="dance-stage" role="dialog" aria-label="全部完成彩蛋">
       <button class="dance-close" id="closeCelebration" type="button" aria-label="关闭彩蛋">×</button>
-      <video id="danceVideo" src="assets/luo-tianyi-dance.mp4" controls playsinline preload="metadata"></video>
+      <iframe id="danceFrame" title="洛天依 Bilibili 随机彩蛋视频" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
       <div class="dance-fallback" id="danceFallback" hidden>
-        <span>全部完成！把舞蹈视频放到 assets/luo-tianyi-dance.mp4 后会自动播放。</span>
+        <span>全部完成！如果视频没有加载，请在 Safari 里允许 Bilibili 播放。</span>
       </div>
     </div>
   </div>
@@ -1470,14 +1509,23 @@
     const redeemList = document.querySelector("#redeemList");
     const celebration = document.querySelector("#celebration");
     const closeCelebration = document.querySelector("#closeCelebration");
-    const danceVideo = document.querySelector("#danceVideo");
+    const danceFrame = document.querySelector("#danceFrame");
     const danceFallback = document.querySelector("#danceFallback");
+    const BILIBILI_DANCE_VIDEOS = [
+      { bvid: "BV1kXf8BvEPe", title: "洛天依 MMD 勾指起誓" },
+      { bvid: "BV17oNH6GEd2", title: "洛天依十四周年 非玩家角色" },
+      { bvid: "BV1CS4y1f7pN", title: "洛天依 我的悲伤是水做的" },
+      { bvid: "BV1qTNP6QEuS", title: "霜雪千年 洛天依十四周年" },
+      { bvid: "BV1Wz4y1U7fF", title: "洛天依 66CCFF" }
+    ];
 
     let currentFilter = "all";
     let currentType = "daily";
     const todayKey = toDateKey(new Date());
     let selectedDate = todayKey;
     let data = loadData();
+    let lastDanceBvid = "";
+    let danceFallbackTimer = 0;
     const celebratedDates = new Set();
 
     selectedDateInput.value = selectedDate;
@@ -1692,25 +1740,45 @@
     }
 
     function playDanceVideo() {
+      const video = pickDanceVideo();
       danceFallback.hidden = true;
-      danceVideo.hidden = false;
-      danceVideo.currentTime = 0;
-      const playPromise = danceVideo.play();
-      if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch(() => {});
-      }
+      danceFrame.hidden = false;
+      danceFrame.title = video.title;
+      danceFrame.src = bilibiliEmbedUrl(video.bvid);
+      window.clearTimeout(danceFallbackTimer);
+      danceFallbackTimer = window.setTimeout(showDanceFallback, 6000);
     }
 
     function closeCelebrationLayer() {
       celebration.classList.remove("show", "video-ready");
       celebration.setAttribute("aria-hidden", "true");
-      danceVideo.pause();
+      window.clearTimeout(danceFallbackTimer);
+      danceFrame.src = "";
       celebration.querySelectorAll(".confetti-piece").forEach((piece) => piece.remove());
     }
 
     function showDanceFallback() {
-      danceVideo.hidden = true;
+      danceFrame.hidden = true;
       danceFallback.hidden = false;
+    }
+
+    function pickDanceVideo() {
+      const choices = BILIBILI_DANCE_VIDEOS.filter((video) => video.bvid !== lastDanceBvid);
+      const pool = choices.length ? choices : BILIBILI_DANCE_VIDEOS;
+      const next = pool[Math.floor(Math.random() * pool.length)];
+      lastDanceBvid = next.bvid;
+      return next;
+    }
+
+    function bilibiliEmbedUrl(bvid) {
+      const params = new URLSearchParams({
+        bvid,
+        autoplay: "1",
+        muted: "0",
+        high_quality: "1",
+        danmaku: "0"
+      });
+      return `https://player.bilibili.com/player.html?${params.toString()}`;
     }
 
     function setActiveFilter(filter) {
@@ -2093,7 +2161,7 @@
     });
 
     closeCelebration.addEventListener("click", closeCelebrationLayer);
-    danceVideo.addEventListener("error", showDanceFallback);
+    danceFrame.addEventListener("load", () => window.clearTimeout(danceFallbackTimer));
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && celebration.classList.contains("show")) {
         closeCelebrationLayer();
