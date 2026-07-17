@@ -1579,6 +1579,21 @@
     const STORAGE_KEY = "pretty-todo-list-v2";
     const LEGACY_KEY = "pretty-todo-list";
     const CELEBRATION_KEY = "xiaokui-celebration-played-bvids";
+    const DATA_PATCH_KEY = "xiaokui-data-patch-2026-07-17";
+    const DEFAULT_DAILY_TASKS = [
+      { text: "古诗词", amount: "2课新古诗词", priority: 3 },
+      { text: "数学练习册", amount: "2课", priority: 3 },
+      { text: "数学小初衔接", amount: "2课", priority: 3 },
+      { text: "背单词", amount: "20新单词", priority: 3 },
+      { text: "练字", amount: "1页", priority: 3 },
+      { text: "语文小练笔", duration: "30分钟", amount: "200字一篇", priority: 3 },
+      { text: "英语小练笔", duration: "20分钟", amount: "49字一篇", priority: 3 },
+      { text: "配音英语", amount: "2篇", priority: 2 },
+      { text: "体育锻炼", amount: "篮球，乒乓球🏓，跳绳，吊杆", priority: 1 },
+      { text: "英语课本", amount: "1课复习1课背诵", priority: 1 },
+      { text: "吉他练习", duration: "30分钟", priority: 1 },
+      { text: "铲猫屎", priority: 1 }
+    ];
 
     const app = document.querySelector("#app");
     const form = document.querySelector("#todoForm");
@@ -1629,6 +1644,7 @@
     let currentFilter = "all";
     let currentType = "daily";
     const todayKey = toDateKey(new Date());
+    const yesterdayKey = addDays(todayKey, -1);
     let selectedDate = todayKey;
     let data = loadData();
     let lastDanceBvid = "";
@@ -1649,12 +1665,12 @@
     function loadData() {
       const saved = readStorage(STORAGE_KEY);
       if (saved && Array.isArray(saved.tasks)) {
-        return {
+        return normalizeData({
           tasks: saved.tasks,
           completions: saved.completions && typeof saved.completions === "object" ? saved.completions : {},
           confirmations: saved.confirmations && typeof saved.confirmations === "object" ? saved.confirmations : {},
           redemptions: Array.isArray(saved.redemptions) ? saved.redemptions : []
-        };
+        });
       }
 
       const legacy = readStorage(LEGACY_KEY);
@@ -1668,26 +1684,86 @@
           done: Boolean(todo.done)
         }));
 
-        return {
+        return normalizeData({
           tasks: migratedTasks.map(({ done, ...task }) => task),
           completions: {
             [todayKey]: Object.fromEntries(migratedTasks.filter((todo) => todo.done).map((todo) => [todo.id, true]))
           },
           confirmations: {},
           redemptions: []
-        };
+        });
       }
 
-      return {
-        tasks: [
-          { id: makeId(), text: "整理今天最重要的 3 件事", type: "daily", createdAt: todayKey },
-          { id: makeId(), text: "喝水、活动 5 分钟", type: "daily", createdAt: todayKey },
-          { id: makeId(), text: "晚上复盘 5 分钟", type: "once", date: todayKey, createdAt: todayKey }
-        ],
+      return normalizeData({
+        tasks: defaultDailyTasks(yesterdayKey),
         completions: {},
         confirmations: {},
         redemptions: []
-      };
+      });
+    }
+
+    function normalizeData(nextData) {
+      ensureDefaultDailyTasks(nextData, yesterdayKey);
+      applyJulySeventeenPatch(nextData);
+      return nextData;
+    }
+
+    function defaultDailyTasks(createdAt) {
+      return DEFAULT_DAILY_TASKS.map((task) => ({
+        id: makeId(),
+        text: task.text,
+        type: "daily",
+        createdAt,
+        duration: task.duration || "",
+        amount: task.amount || "",
+        priority: task.priority
+      }));
+    }
+
+    function ensureDefaultDailyTasks(nextData, createdAt) {
+      nextData.tasks = Array.isArray(nextData.tasks) ? nextData.tasks : [];
+      DEFAULT_DAILY_TASKS.forEach((template) => {
+        const existing = nextData.tasks.find((task) => task.type === "daily" && task.text === template.text);
+        if (existing) {
+          existing.duration = template.duration || existing.duration || "";
+          existing.amount = template.amount || existing.amount || "";
+          existing.priority = template.priority;
+          if (!existing.createdAt || existing.createdAt > createdAt) {
+            existing.createdAt = createdAt;
+          }
+          return;
+        }
+
+        nextData.tasks.push({
+          id: makeId(),
+          text: template.text,
+          type: "daily",
+          createdAt,
+          duration: template.duration || "",
+          amount: template.amount || "",
+          priority: template.priority
+        });
+      });
+    }
+
+    function applyJulySeventeenPatch(nextData) {
+      if (localStorage.getItem(DATA_PATCH_KEY)) return;
+      nextData.confirmations = nextData.confirmations || {};
+      nextData.completions = nextData.completions || {};
+      nextData.confirmations[yesterdayKey] = nextData.confirmations[yesterdayKey] || new Date().toISOString();
+      nextData.completions[yesterdayKey] = nextData.completions[yesterdayKey] || {};
+
+      nextData.tasks
+        .filter((task) => task.type === "daily" && DEFAULT_DAILY_TASKS.some((template) => template.text === task.text))
+        .forEach((task) => {
+          nextData.completions[yesterdayKey][task.id] = true;
+        });
+
+      try {
+        localStorage.setItem(DATA_PATCH_KEY, "done");
+      } catch (error) {
+        console.warn("一次性任务补丁标记暂时无法保存。", error);
+      }
     }
 
     function save() {
@@ -1697,6 +1773,8 @@
         console.warn("任务已显示，但浏览器暂时无法保存到本地。", error);
       }
     }
+
+    save();
 
     function makeId() {
       if (globalThis.crypto && crypto.randomUUID) {
