@@ -1559,7 +1559,7 @@
     <section class="panel history" aria-label="最近 7 天完成情况">
       <div class="history-head">
         <h2>最近 7 天</h2>
-        <span class="history-note">仅统计已确认日期的当天任务</span>
+        <span class="history-note">统计每天重复和当天任务的整体完成情况</span>
       </div>
       <div class="history-list" id="historyList"></div>
     </section>
@@ -1578,6 +1578,7 @@
   <script>
     const STORAGE_KEY = "pretty-todo-list-v2";
     const LEGACY_KEY = "pretty-todo-list";
+    const CELEBRATION_KEY = "xiaokui-celebration-played-bvids";
 
     const app = document.querySelector("#app");
     const form = document.querySelector("#todoForm");
@@ -1616,12 +1617,13 @@
     const danceFrame = document.querySelector("#danceFrame");
     const danceFallback = document.querySelector("#danceFallback");
     const BILIBILI_DANCE_VIDEOS = [
-      { bvid: "BV1kXf8BvEPe", title: "洛天依 MMD 勾指起誓" },
-      { bvid: "BV1Wz4y1U7fF", title: "洛天依 66CCFF 全息演唱会" },
-      { bvid: "BV1A4411s7D2", title: "洛天依 MMD 勾指起誓" },
-      { bvid: "BV1CS4y1f7pN", title: "洛天依 4K 我的悲伤是水做的" },
-      { bvid: "BV1VRypY6E7C", title: "洛天依 MMD Specialist" },
-      { bvid: "BV1Ds41117VZ", title: "普通 disco 洛天依 MMD" }
+      { bvid: "BV1kfjR6uEye", title: "风之子 2026 官方生贺曲", duration: "03:18" },
+      { bvid: "BV1fj41187R8", title: "天依雪王甜蜜蜜 动画 MV", duration: "01:22" },
+      { bvid: "BV1P4411F7aa", title: "2019 生日会直播预告", duration: "02:37" },
+      { bvid: "BV11s411k7mE", title: "BML 2016 官方先行预告", duration: "00:42" },
+      { bvid: "BV194Nc63Ehg", title: "14 周年生日会预告片", duration: "00:48" },
+      { bvid: "BV1mr421K7dE", title: "2024 歌行宇宙预告片", duration: "01:14" },
+      { bvid: "BV1Mw4m1Y79t", title: "十二周年共鸣之夜倒计时", duration: "00:44" }
     ];
 
     let currentFilter = "all";
@@ -1724,7 +1726,11 @@
     }
 
     function tasksForDate(dateKey) {
-      return data.tasks.filter((task) => task.type === "daily" || task.date === dateKey);
+      return data.tasks.filter((task) => {
+        if (task.type !== "daily") return task.date === dateKey;
+        const startDate = String(task.createdAt || "").slice(0, 10);
+        return !startDate || startDate <= dateKey;
+      });
     }
 
     function isDone(task, dateKey) {
@@ -1747,14 +1753,12 @@
     }
 
     function confirmedDayStats(dateKey) {
-      const tasks = data.tasks.filter((task) => task.type === "once" && task.date === dateKey);
-      const done = tasks.filter((task) => isDone(task, dateKey)).length;
-      return { total: tasks.length, done, left: tasks.length - done };
+      return dayStats(dateKey);
     }
 
     function recentSevenDayStats(days) {
       return days.reduce((sum, dateKey) => {
-        if (!isConfirmed(dateKey)) return sum;
+        if (!isTrackedDate(dateKey)) return sum;
         const stats = confirmedDayStats(dateKey);
         sum.total += stats.total;
         sum.done += stats.done;
@@ -1765,6 +1769,14 @@
 
     function isConfirmed(dateKey) {
       return Boolean(data.confirmations && data.confirmations[dateKey]);
+    }
+
+    function hasCompletionRecord(dateKey) {
+      return Boolean(data.completions && data.completions[dateKey] && Object.keys(data.completions[dateKey]).length);
+    }
+
+    function isTrackedDate(dateKey) {
+      return isConfirmed(dateKey) || hasCompletionRecord(dateKey);
     }
 
     function confirmDate(dateKey) {
@@ -1879,11 +1891,31 @@
     }
 
     function pickDanceVideo() {
-      const choices = BILIBILI_DANCE_VIDEOS.filter((video) => video.bvid !== lastDanceBvid);
-      const pool = choices.length ? choices : BILIBILI_DANCE_VIDEOS;
+      const played = readPlayedDanceBvids();
+      const remaining = BILIBILI_DANCE_VIDEOS.filter((video) => !played.includes(video.bvid));
+      const freshPool = remaining.length ? remaining : BILIBILI_DANCE_VIDEOS;
+      const choices = freshPool.filter((video) => video.bvid !== lastDanceBvid);
+      const pool = choices.length ? choices : freshPool;
       const next = pool[Math.floor(Math.random() * pool.length)];
       lastDanceBvid = next.bvid;
+      writePlayedDanceBvid(next.bvid, remaining.length ? played : []);
       return next;
+    }
+
+    function readPlayedDanceBvids() {
+      const saved = readStorage(CELEBRATION_KEY);
+      if (!Array.isArray(saved)) return [];
+      const allowed = new Set(BILIBILI_DANCE_VIDEOS.map((video) => video.bvid));
+      return saved.filter((bvid) => allowed.has(bvid));
+    }
+
+    function writePlayedDanceBvid(bvid, played) {
+      const next = [...new Set([...played, bvid])];
+      try {
+        localStorage.setItem(CELEBRATION_KEY, JSON.stringify(next));
+      } catch (error) {
+        console.warn("彩蛋播放记录暂时无法保存。", error);
+      }
     }
 
     function bilibiliEmbedUrl(bvid) {
@@ -1996,7 +2028,7 @@
       `;
 
       const dailyCards = days.map((dateKey) => {
-        const day = isConfirmed(dateKey) ? confirmedDayStats(dateKey) : { total: 0, done: 0, left: 0 };
+        const day = isTrackedDate(dateKey) ? confirmedDayStats(dateKey) : { total: 0, done: 0, left: 0 };
         const dayRate = day.total ? Math.round((day.done / day.total) * 100) : 0;
         const dayStatus = historyStatus(day);
         const dayReward = historyReward(dayStatus);
@@ -2081,7 +2113,10 @@
     }
 
     function confirmedDatesAscending() {
-      return Object.keys(data.confirmations || {})
+      return [...new Set([
+        ...Object.keys(data.confirmations || {}),
+        ...Object.keys(data.completions || {}).filter(hasCompletionRecord)
+      ])]
         .sort((a, b) => new Date(`${a}T00:00:00`) - new Date(`${b}T00:00:00`));
     }
 
