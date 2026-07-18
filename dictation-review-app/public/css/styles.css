@@ -692,9 +692,10 @@ h3 {
   gap: 6px;
   margin-top: 6px;
   padding: 4px 7px;
+  border: 1px solid transparent;
   border-radius: 999px;
   color: #ffffff;
-  background: var(--muted);
+  background: var(--primary);
   font-size: 0.78rem;
   font-weight: 800;
 }
@@ -702,6 +703,13 @@ h3 {
 .reward-badge.perfect,
 .reward-badge.good {
   background: var(--green);
+}
+
+.reward-badge.none,
+.reward-badge.partial {
+  color: var(--muted);
+  border-color: rgba(183, 223, 232, 0.82);
+  background: rgba(244, 251, 253, 0.92);
 }
 
 .reward-badge.penalty {

@@ -1210,3 +1210,17 @@ Verification:
 - `npm install`: passed, 0 vulnerabilities.
 - `npm test`: passed, 96 tests.
 - Local HTTP smoke test with `npm start`: `/`, `/css/styles.css`, and `/api/health` returned HTTP 200.
+
+## 2026-07-18 Recent History Empty Badge Cleanup
+
+Current phase: post-publish visual polish.
+
+Completed:
+
+- Replaced the dark filled empty-state badge in Recent 7 Days with a light outlined badge.
+- Kept successful and penalty reward badges colored so meaningful records remain easy to spot.
+- Updated static asset cache-busting strings for GitHub Pages and iPad refreshes.
+
+Verification:
+
+- `npm test`: passed, 96 tests.
