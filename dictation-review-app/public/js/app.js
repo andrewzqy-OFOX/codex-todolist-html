@@ -113,7 +113,7 @@ function formatMoney(value) {
 }
 
 function rewardLabel(record) {
-  if (!record?.targetCount) return { text: "暂无记录", mark: "待完成" };
+  if (!record?.targetCount) return { text: "待完成", mark: "" };
   if (record.status === "perfect") return { text: "满分达成", mark: "+2" };
   if (record.status === "good") return { text: "稳定完成", mark: "+1" };
   if (record.status === "penalty") return { text: "需要补一下", mark: "-1" };
@@ -204,8 +204,8 @@ function renderAchievementHistory(records, today) {
     card.innerHTML = `
       <div class="day-date"><span>${record.date.slice(5)}</span><span>${record.date === today ? "今天" : ""}</span></div>
       <div class="day-rate">${record.rate || 0}%</div>
-      <div class="reward-badge ${record.status || "none"}"><span>${meta.mark}</span><span>${meta.text}</span></div>
-      <div class="mini-stats">${record.targetCount ? `完成 ${record.completedCount}/${record.targetCount}` : "暂无复习记录"}</div>
+      <div class="reward-badge ${record.status || "none"}">${meta.mark ? `<span>${meta.mark}</span>` : ""}<span>${meta.text}</span></div>
+      <div class="mini-stats">${record.targetCount ? `完成 ${record.completedCount}/${record.targetCount}` : ""}</div>
       <div class="mini-progress"><span style="width: ${record.rate || 0}%"></span></div>
     `;
     achievementHistory.append(card);

@@ -1224,3 +1224,18 @@ Completed:
 Verification:
 
 - `npm test`: passed, 96 tests.
+
+## 2026-07-18 Recent History Pending Label Simplification
+
+Current phase: post-publish visual polish.
+
+Completed:
+
+- Simplified empty Recent 7 Days cards to show only `待完成` in the status badge.
+- Removed the extra `0` and `暂无记录` text from empty history badges.
+- Removed the extra `暂无复习记录` line for days without a target count.
+- Updated static asset cache-busting strings for GitHub Pages and iPad refreshes.
+
+Verification:
+
+- `npm test`: passed, 96 tests.

@@ -479,7 +479,7 @@
     if (record.status === "good") return { mark: "+¥1", text: "已达成" };
     if (record.status === "penalty") return { mark: "-¥1", text: "待完成" };
     if (record.status === "partial") return { mark: "0", text: "继续加油" };
-    return { mark: "0", text: "暂无记录" };
+    return { mark: "", text: "待完成" };
   }
 
   function renderAchievementHistory(settings, date) {
@@ -503,8 +503,8 @@
       card.innerHTML = `
         <div class="day-date"><span>${day.slice(5)}</span><span>${day === date ? "今天" : ""}</span></div>
         <div class="day-rate">${record.rate || 0}%</div>
-        <div class="reward-badge ${record.status || "none"}"><span>${meta.mark}</span><span>${meta.text}</span></div>
-        <div class="mini-stats">${record.targetCount ? `完成 ${record.completedCount}/${record.targetCount}` : "暂无复习记录"}</div>
+        <div class="reward-badge ${record.status || "none"}">${meta.mark ? `<span>${meta.mark}</span>` : ""}<span>${meta.text}</span></div>
+        <div class="mini-stats">${record.targetCount ? `完成 ${record.completedCount}/${record.targetCount}` : ""}</div>
         <div class="mini-progress"><span style="width: ${record.rate || 0}%"></span></div>
       `;
       container.append(card);
