@@ -1239,3 +1239,18 @@ Completed:
 Verification:
 
 - `npm test`: passed, 96 tests.
+
+## 2026-07-18 Learned Card Avatar Fit
+
+Current phase: post-publish iPad visual polish.
+
+Completed:
+
+- Replaced the learned-summary card background crop with the dedicated avatar image.
+- Scaled the learned-card avatar by height so the face remains fully visible inside small cards.
+- Added an iPad-width override with a smaller avatar background size for portrait layouts.
+- Updated static asset cache-busting strings for GitHub Pages and iPad refreshes.
+
+Verification:
+
+- `npm test`: passed, 96 tests.

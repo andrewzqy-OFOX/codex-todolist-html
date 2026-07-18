@@ -403,8 +403,8 @@ h3 {
   border: 1px solid rgba(122, 203, 222, 0.58);
   border-radius: 12px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(235, 250, 247, 0.86)),
-    url("../assets/xiaokui-main.png") center 38% / 165% auto no-repeat;
+    linear-gradient(90deg, rgba(255, 255, 255, 0.94) 0%, rgba(235, 250, 247, 0.9) 58%, rgba(235, 250, 247, 0.74) 100%),
+    url("../assets/xiaokui-avatar.webp") right 10px center / auto 84% no-repeat;
   padding: 12px 14px;
 }
 
@@ -1174,6 +1174,12 @@ textarea {
   .learned-summary-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 8px;
+  }
+
+  .learned-summary-card {
+    background:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.95) 0%, rgba(235, 250, 247, 0.91) 58%, rgba(235, 250, 247, 0.78) 100%),
+      url("../assets/xiaokui-avatar.webp") right 8px center / auto 72% no-repeat;
   }
 
   .history-list {
