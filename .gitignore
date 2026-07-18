@@ -3,11 +3,29 @@ Thumbs.db
 *.tmp
 *.log
 
-# Legacy local materials kept out of this To Do List repo
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Node and test output
+node_modules/
+coverage/
+.nyc_output/
+dist/
+build/
+
+# Local generated exports and backups
+*.backup.json
+exports/
+
+# Legacy local materials kept out of this repository
 assets_chinese_wine_culture/
 财报解读/
+璐㈡姤瑙ｈ/
 make_chinese_wine_culture_ppt.js
 make_chinese_wine_culture_ppt_rich.js
 value_investment_research_prompt.py
 启动价值投资研究.ps1
+鍚姩浠峰€兼姇璧勭爺绌?ps1
 *.pptx

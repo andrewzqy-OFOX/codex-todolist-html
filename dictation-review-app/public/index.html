@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>小葵の背默</title>
+    <link rel="stylesheet" href="./css/styles.css?v=20260718-ipad-todolist-layout">
+    <link rel="apple-touch-icon" href="./assets/xiaokui-icon.png">
+    <link rel="icon" href="./assets/xiaokui-icon.png">
+    <link rel="manifest" href="./manifest.webmanifest">
+  </head>
+  <body>
+    <header class="app-header panel">
+      <div class="header-copy">
+        <p class="eyebrow">本地优先 · 纸笔背默</p>
+        <h1>小葵の背默</h1>
+        <p class="subtle">每天处理新增、到期和错字强化内容，家长检查纸笔结果后记录反馈。</p>
+      </div>
+      <div class="today-date" id="today-date"></div>
+
+      <section class="command-bar" aria-label="主导航">
+        <nav class="main-nav" aria-label="主导航">
+          <button class="nav-button active" type="button" data-view="today">今日任务</button>
+          <button class="nav-button" type="button" data-view="dictation">背默</button>
+          <button class="nav-button" type="button" data-view="library">学习库</button>
+        </nav>
+      </section>
+    </header>
+
+    <main class="app-shell">
+      <section class="content-stack" aria-label="主要内容">
+        <section id="view-today" class="view active today-view" aria-labelledby="today-title">
+          <section class="learned-panel panel" aria-label="已学会统计">
+            <div class="view-head compact-title">
+              <div>
+                <h2>已学会</h2>
+                <p class="subtle">按熟练状态统计已经掌握的内容。</p>
+              </div>
+            </div>
+            <div id="learned-summary" class="learned-summary-grid"></div>
+          </section>
+
+          <section class="today-task-panel panel" aria-labelledby="today-title">
+          <div class="view-head compact-title">
+            <div>
+              <h2 id="today-title">今日任务</h2>
+              <p class="subtle">按背默入口统计今日到期内容。</p>
+            </div>
+          </div>
+          <div id="today-summary" class="stats-grid">正在加载...</div>
+          </section>
+
+          <section class="history-panel panel compact-history" aria-label="最近 7 天达成记录">
+            <div class="history-head">
+              <h3>最近 7 天</h3>
+              <span class="history-note">未复习内容会继续累积到后续到期任务。</span>
+            </div>
+            <div id="achievement-history" class="history-list"></div>
+          </section>
+        </section>
+
+        <section id="view-dictation" class="view panel" aria-labelledby="dictation-title">
+          <h2 id="dictation-title">背默</h2>
+          <div class="task-actions mode-actions dictation-mode-actions" aria-label="选择背默范围">
+            <button class="primary-action" type="button" data-start-mode="all">全部背默</button>
+            <button type="button" data-start-mode="english">English Words</button>
+            <button type="button" data-start-mode="chinese">中文生词</button>
+            <button type="button" data-start-mode="poem">古诗词</button>
+          </div>
+          <div id="dictation-panel" class="dictation-panel">请选择上方范围开始背默。</div>
+        </section>
+
+        <section id="view-library" class="view panel" aria-labelledby="library-title">
+          <div class="library-head">
+            <div>
+              <h2 id="library-title">学习库</h2>
+            </div>
+          </div>
+          <div class="task-actions mode-actions library-filter-actions" aria-label="筛选学习库内容">
+            <button class="primary-action active" type="button" data-library-filter="all">全部内容</button>
+            <button type="button" data-library-filter="english">English Words</button>
+            <button type="button" data-library-filter="chinese">中文生词</button>
+            <button type="button" data-library-filter="poem">古诗词</button>
+          </div>
+          <div id="library-list" class="library-list">正在加载...</div>
+          <div class="library-footer-tools">
+            <p>静态版先保存的内容，可以在电脑后端版里补全音标、释义和来源。</p>
+            <button id="library-enrich-all-button" type="button">一键补全</button>
+          </div>
+        </section>
+
+        <section class="backup-panel panel" aria-label="备份恢复">
+          <h3>数据备份</h3>
+          <p class="subtle">本地数据只保存在当前浏览器，定期导出 JSON 备份更稳妥。</p>
+          <div class="header-actions">
+            <button id="export-backup-button" type="button">导出备份</button>
+            <label class="file-button">
+              导入备份
+              <input id="import-backup-input" type="file" accept="application/json">
+            </label>
+          </div>
+        </section>
+      </section>
+
+      <aside class="side-stack" aria-label="奖励和添加内容">
+        <section class="reward-panel panel" aria-label="奖励系统">
+          <div class="reward-title">
+            <div>
+              <h3>奖励记录</h3>
+              <p class="subtle">按当天英语和语文复习任务的总达成率计算。</p>
+            </div>
+            <div class="idol-piggy" aria-label="洛天依头像"></div>
+          </div>
+          <div id="reward-summary" class="reward-grid"></div>
+          <div class="reward-rules">
+            <div class="rule-line"><span>达成率 100%</span><strong>奖励 ¥2</strong></div>
+            <div class="rule-line"><span>达成率 ≥ 85%</span><strong>奖励 ¥1</strong></div>
+            <div class="rule-line"><span>达成率 &lt; 60%</span><strong>扣 ¥1</strong></div>
+          </div>
+          <form id="reward-redeem-form" class="redeem-form">
+            <label>
+              抵扣内容
+              <input id="reward-redeem-product" type="text" placeholder="漫画书 / 文具 / 小零食" autocomplete="off">
+            </label>
+            <label>
+              金额
+              <input id="reward-redeem-amount" type="number" min="0.01" step="0.01" value="1" placeholder="1 元">
+            </label>
+            <button type="submit">记录抵扣</button>
+          </form>
+          <div id="reward-redeem-list" class="redeem-list"></div>
+        </section>
+
+        <section id="view-add" class="side-panel add-side-panel panel" aria-labelledby="add-title">
+          <h2 id="add-title">添加新词</h2>
+          <p>静态版可以直接保存输入内容；电脑后端版可以联网查询后确认。</p>
+
+          <div class="add-tabs" role="tablist" aria-label="添加内容类型">
+            <button class="add-tab active" type="button" data-kind="english">英语单词</button>
+            <button class="add-tab" type="button" data-kind="chinese">中文词语</button>
+            <button class="add-tab" type="button" data-kind="poem">古诗词</button>
+          </div>
+
+          <form id="add-content-form" class="add-form">
+            <section class="add-panel active" data-kind="english">
+              <label>
+                每行一个英语单词
+                <textarea id="english-input" rows="5" placeholder="environment&#10;present"></textarea>
+              </label>
+            </section>
+
+            <section class="add-panel" data-kind="chinese" hidden>
+              <label>
+                每行一个中文词语
+                <textarea id="chinese-input" rows="5" placeholder="踌躇&#10;坚持"></textarea>
+              </label>
+            </section>
+
+            <section class="add-panel" data-kind="poem" hidden>
+              <div class="form-grid">
+                <label>
+                  诗词名称或要背默的句子
+                  <input id="poem-title-input" placeholder="送杜少府之任蜀州">
+                </label>
+                <label>
+                  作者，可选
+                  <input id="poem-author-input" placeholder="王勃">
+                </label>
+              </div>
+            </section>
+
+            <div class="form-actions">
+              <button id="query-button" type="submit">查询资料</button>
+              <button id="manual-button" type="button">手动填写</button>
+            </div>
+          </form>
+
+          <div id="query-status" class="status-box subtle">等待输入。</div>
+          <div id="add-results" class="result-list"></div>
+        </section>
+      </aside>
+    </main>
+
+    <div id="runtime-warning" class="runtime-warning">
+      静态版可直接使用：手动添加、背默、奖励和备份都会保存在这个浏览器。AI 联网补全是可选增强，不影响日常背默。
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div class="celebration" id="celebration" aria-hidden="true">
+      <div class="dance-stage" role="dialog" aria-label="满分奖励彩蛋">
+        <button class="dance-close" id="closeCelebration" type="button" aria-label="关闭彩蛋">×</button>
+        <iframe id="danceFrame" title="洛天依 Bilibili 随机彩蛋视频" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+        <div class="dance-fallback" id="danceFallback" hidden>
+          <span>今日达成 100%。如果视频没有加载，请允许 Bilibili 播放。</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="./js/static-fallback.js?v=20260718-ipad-todolist-layout"></script>
+    <script type="module" src="./js/app.js?v=20260718-ipad-todolist-layout"></script>
+  </body>
+</html>

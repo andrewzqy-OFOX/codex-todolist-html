@@ -1,0 +1,23 @@
+{
+  "name": "dictation-review-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first junior dictation and memory review app skeleton.",
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^4.19.2",
+    "openai": "^6.48.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

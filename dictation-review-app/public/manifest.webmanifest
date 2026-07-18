@@ -1,0 +1,16 @@
+{
+  "name": "小葵の背默",
+  "short_name": "小葵背默",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#edf8fb",
+  "theme_color": "#00a6c8",
+  "icons": [
+    {
+      "src": "./assets/xiaokui-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
