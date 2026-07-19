@@ -9,6 +9,7 @@ import { addItem, addItems, getItem, getSettings, resetDatabaseForTests, updateS
 import { buildTodayQueue } from "../public/js/queue-builder.js";
 import { summarizeRecent } from "../public/js/daily-rewards.js";
 import { REVIEW_RESULTS } from "../public/js/review-types.js";
+import { addDays, toLocalDate } from "../public/js/date-utils.js";
 
 const englishDraft = {
   success: true,
@@ -78,17 +79,19 @@ test.beforeEach(async () => {
 });
 
 test("English full flow: confirm, spell wrong, retry same day, spelling remains due tomorrow only", async () => {
+  const today = toLocalDate();
+  const tomorrow = addDays(today, 1);
   const result = await saveConfirmedDraft("english", englishDraft);
   const item = result.items[0];
-  let session = takeNextCard(createDictationSession(buildTodayQueue([item], "2026-07-18"), [item], { today: "2026-07-18", mode: "english" }));
+  let session = takeNextCard(createDictationSession(buildTodayQueue([item], today), [item], { today, mode: "english" }));
 
   session = await recordCardResult(session, { kind: "spelling_wrong" });
   let saved = await getItem(item.id);
 
   assert.equal(saved.spellingTrack.totalWrong, 1);
-  assert.equal(saved.spellingTrack.nextReviewDate, "2026-07-19");
+  assert.equal(saved.spellingTrack.nextReviewDate, tomorrow);
   assert.equal(saved.phoneticTrack.totalCorrect, 1);
-  assert.equal(saved.phoneticTrack.nextReviewDate, "2026-07-19");
+  assert.equal(saved.phoneticTrack.nextReviewDate, tomorrow);
 
   session = takeNextCard(session);
   assert.equal(session.currentCard.isRetry, true);
@@ -96,8 +99,8 @@ test("English full flow: confirm, spell wrong, retry same day, spelling remains 
   saved = await getItem(item.id);
 
   assert.equal(saved.spellingTrack.stage, 0);
-  assert.equal(saved.spellingTrack.nextReviewDate, "2026-07-19");
-  assert.equal(buildTodayQueue([saved], "2026-07-19")[0].dimensions.includes("spelling"), true);
+  assert.equal(saved.spellingTrack.nextReviewDate, tomorrow);
+  assert.equal(buildTodayQueue([saved], tomorrow)[0].dimensions.includes("spelling"), true);
 });
 
 test("Chinese full flow: no antonym, clicked character, confirmed related word, rotation, three dates exit", async () => {

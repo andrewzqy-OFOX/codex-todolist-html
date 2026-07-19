@@ -1254,3 +1254,22 @@ Completed:
 Verification:
 
 - `npm test`: passed, 96 tests.
+
+## 2026-07-19 iPad Cache Refresh Fix
+
+Current phase: post-publish iPad cache repair.
+
+Completed:
+
+- Confirmed GitHub Pages already serves the latest dictation app HTML and CSS.
+- Identified the root todo-list service worker as the reason iPad could keep stale dictation-app pages.
+- Bumped the root service worker cache name from `xiaokui-todo-v10` to `xiaokui-todo-v11`.
+- Excluded `/codex-todolist-html/dictation-review-app/` from service-worker caching and forced it to use network fetch.
+- Added a dictation-app startup safeguard that unregisters the root service worker and reloads once.
+- Updated dictation-app CSS/JS cache-busting strings.
+- Fixed one final-audit test that used a hard-coded old date after the system date moved to 2026-07-19.
+
+Verification:
+
+- `node tests/final-audit.test.js`: passed, 6 tests.
+- `npm test`: passed, 96 tests.
