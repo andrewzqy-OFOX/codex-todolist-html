@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>小葵の背默</title>
-    <link rel="stylesheet" href="./css/styles.css?v=20260722-archive-icon">
+    <link rel="stylesheet" href="./css/styles.css?v=20260722-library-tools-row">
     <link rel="apple-touch-icon" href="./assets/xiaokui-icon.png">
     <link rel="icon" href="./assets/xiaokui-icon.png">
     <link rel="manifest" href="./manifest.webmanifest">
@@ -88,15 +88,7 @@
           </div>
           <div id="library-list" class="library-list">正在加载...</div>
           <div class="library-footer-tools">
-            <p>静态版先保存的内容，可以在电脑后端版里补全音标、释义和来源。</p>
-            <button id="library-enrich-all-button" type="button">一键补全</button>
-          </div>
-        </section>
-
-        <section class="backup-panel panel" aria-label="备份恢复">
-          <h3>数据备份</h3>
-          <p class="subtle">本地数据只保存在当前浏览器，定期导出 JSON 备份更稳妥。</p>
-          <div class="header-actions">
+            <button id="library-enrich-all-button" type="button">一键补全内容</button>
             <button id="export-backup-button" type="button">导出备份</button>
             <label class="file-button">
               导入备份
@@ -215,7 +207,7 @@
           .catch(() => {});
       }
     </script>
-    <script src="./js/static-fallback.js?v=20260722-archive-icon"></script>
-    <script type="module" src="./js/app.js?v=20260722-archive-icon"></script>
+    <script src="./js/static-fallback.js?v=20260722-library-tools-row"></script>
+    <script type="module" src="./js/app.js?v=20260722-library-tools-row"></script>
   </body>
 </html>

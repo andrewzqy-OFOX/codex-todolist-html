@@ -492,23 +492,13 @@ h3 {
 }
 
 .reward-panel,
-.history-panel,
-.backup-panel {
+.history-panel {
   display: grid;
   gap: 14px;
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.78);
-}
-
-.backup-panel {
-  align-self: end;
-}
-
-.backup-panel h3,
-.backup-panel p {
-  margin: 0;
 }
 
 .reward-title {
@@ -1036,23 +1026,25 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-top: 12px;
   padding-top: 10px;
   border-top: 1px solid rgba(183, 223, 232, 0.58);
 }
 
-.library-footer-tools p {
-  max-width: 520px;
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.78rem;
-}
-
-.library-footer-tools button {
+.library-footer-tools button,
+.library-footer-tools .file-button {
   min-height: 30px;
   padding: 5px 10px;
   font-size: 0.78rem;
+  border-radius: 999px;
+}
+
+.library-footer-tools #library-enrich-all-button {
+  color: #ffffff;
+  border-color: var(--primary-dark);
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
 }
 
 .confidence {
@@ -1245,8 +1237,7 @@ textarea {
   }
 
   .side-panel,
-  .reward-panel,
-  .backup-panel {
+  .reward-panel {
     padding: 14px;
   }
 
@@ -1408,7 +1399,8 @@ textarea {
     flex-direction: column;
   }
 
-  .library-footer-tools button {
+  .library-footer-tools button,
+  .library-footer-tools .file-button {
     width: auto;
   }
 

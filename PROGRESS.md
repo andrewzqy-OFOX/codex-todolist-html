@@ -1324,3 +1324,18 @@ Completed:
 Verification:
 
 - `npm test`: passed, 102 tests.
+
+## 2026-07-22 Library Tools Row
+
+Current phase: post-publish UI polish.
+
+Completed:
+
+- Moved `一键补全内容`, `导出备份`, and `导入备份` into one compact row at the bottom of the Library panel.
+- Removed the separate backup panel from the main content stack to reduce visual clutter.
+- Kept the existing button/input ids so backup import/export and enrichment handlers continue to work.
+- Updated cache-busting strings for GitHub Pages and iPad refreshes.
+
+Verification:
+
+- `npm test`: passed, 102 tests.
