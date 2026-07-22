@@ -422,6 +422,30 @@ h3 {
   margin: 0;
 }
 
+.dictation-view-toggle {
+  display: inline-flex;
+  gap: 6px;
+  padding: 5px;
+  margin: 8px 0 2px;
+  border: 1px solid rgba(183, 223, 232, 0.74);
+  border-radius: 16px;
+  background: rgba(246, 253, 255, 0.82);
+}
+
+.dictation-view-toggle button {
+  min-height: 34px;
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  box-shadow: none;
+}
+
+.dictation-view-toggle button.active {
+  color: #ffffff;
+  border-color: #006f91;
+  background: linear-gradient(135deg, #006f91, #009fc1);
+}
+
 .mode-actions {
   margin: 12px 0 4px;
   padding: 8px 0 0;
@@ -740,7 +764,8 @@ h3 {
 .library-list,
 .dictation-panel,
 .dictation-card,
-.completion-panel {
+.completion-panel,
+.quick-dictation-list {
   display: grid;
   gap: 14px;
 }
@@ -824,6 +849,65 @@ textarea {
 .card-title {
   font-size: 1.25rem;
   font-weight: 800;
+}
+
+.quick-dictation-list {
+  gap: 8px;
+}
+
+.quick-dictation-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.quick-dictation-name {
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-size: 1.05rem;
+}
+
+.quick-dictation-accuracy {
+  min-width: 54px;
+  color: var(--primary-dark);
+  font-weight: 900;
+  text-align: right;
+}
+
+.quick-dictation-actions {
+  display: inline-flex;
+  gap: 7px;
+}
+
+.quick-result-button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.quick-result-button.correct {
+  color: #ffffff;
+  border-color: rgba(24, 169, 130, 0.7);
+  background: linear-gradient(135deg, #18a982, #5eddbb);
+}
+
+.quick-result-button.wrong {
+  color: #ffffff;
+  border-color: rgba(226, 75, 122, 0.7);
+  background: linear-gradient(135deg, #e24b7a, #ff8ab1);
 }
 
 .char-token-grid {

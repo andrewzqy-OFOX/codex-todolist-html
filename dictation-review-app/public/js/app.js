@@ -12,6 +12,7 @@ import {
   takeNextCard,
   tokenizeText
 } from "./dictation-session.js";
+import { dictationListLabel, formatAccuracyRatio, quickFeedbackForCard } from "./dictation-list.js";
 import { archiveItem, getAllItems, openDatabase } from "./db.js";
 import { getSettings, updateSettings } from "./db.js";
 import { toLocalDate } from "./date-utils.js";
@@ -65,6 +66,8 @@ let currentItems = [];
 let currentQueue = [];
 let currentSession = null;
 let submittingResult = false;
+let dictationUiMode = "card";
+let dictationFilterMode = "all";
 let danceFallbackTimer = 0;
 let lastDanceBvid = "";
 let libraryFilter = "all";
@@ -262,17 +265,53 @@ function setupTaskStartButtons() {
     button.addEventListener("click", async () => {
       await refresh();
       const mode = button.dataset.startMode;
+      dictationFilterMode = mode;
+      updateDictationModeButtons();
       const filtered = filterQueueByMode(currentQueue, mode);
       if (!filtered.length) {
-        showToast("这个范围今天没有可背默内容。", true);
+        showToast(`这个范围今天没有可${dictationUiMode === "list" ? "听写" : "背默"}内容。`, true);
+        if (dictationUiMode === "list") {
+          document.querySelector('[data-view="dictation"]')?.click();
+          renderDictationList(mode);
+        }
+        return;
+      }
+
+      document.querySelector('[data-view="dictation"]')?.click();
+      if (dictationUiMode === "list") {
+        currentSession = null;
+        clearSessionStorage();
+        renderDictationList(mode);
         return;
       }
 
       currentSession = takeNextCard(createDictationSession(filtered, currentItems, { mode }));
       saveSessionToStorage(currentSession);
-      document.querySelector('[data-view="dictation"]')?.click();
       renderDictation();
     });
+  });
+
+  document.querySelectorAll("[data-dictation-ui]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      dictationUiMode = button.dataset.dictationUi || "card";
+      document.querySelectorAll("[data-dictation-ui]").forEach((item) => {
+        item.classList.toggle("active", item === button);
+      });
+      await refresh();
+      if (dictationUiMode === "list") {
+        currentSession = null;
+        clearSessionStorage();
+        renderDictationList(dictationFilterMode);
+      } else {
+        renderDictation();
+      }
+    });
+  });
+}
+
+function updateDictationModeButtons() {
+  document.querySelectorAll("[data-start-mode]").forEach((button) => {
+    button.classList.toggle("active", (button.dataset.startMode || "all") === dictationFilterMode);
   });
 }
 
@@ -342,6 +381,11 @@ function makeButton(text, handler, className = "") {
 }
 
 function renderDictation() {
+  if (dictationUiMode === "list") {
+    renderDictationList(dictationFilterMode);
+    return;
+  }
+
   dictationPanel.replaceChildren();
 
   if (!currentSession) {
@@ -389,6 +433,80 @@ function renderDictation() {
   const progress = makeLine(`剩余 ${currentSession.queue.length} 张`, "muted");
   article.append(progress);
   dictationPanel.append(article);
+}
+
+function renderDictationList(mode = "all") {
+  dictationPanel.replaceChildren();
+  const filtered = filterQueueByMode(currentQueue, mode);
+  if (!filtered.length) {
+    dictationPanel.textContent = "这个范围今天没有可听写内容。";
+    return;
+  }
+
+  const list = document.createElement("div");
+  list.className = "quick-dictation-list";
+
+  filtered.forEach((card) => {
+    const item = currentItems.find((entry) => entry.id === card.itemId) || card.itemSnapshot;
+    const preparedCard = { ...card, itemSnapshot: structuredClone(item) };
+    const row = document.createElement("article");
+    row.className = `quick-dictation-row ${card.cardType}`;
+
+    const title = document.createElement("strong");
+    title.className = "quick-dictation-name";
+    title.textContent = dictationListLabel(preparedCard);
+
+    const accuracy = document.createElement("span");
+    accuracy.className = "quick-dictation-accuracy";
+    accuracy.textContent = formatAccuracyRatio(item);
+
+    const actions = document.createElement("div");
+    actions.className = "quick-dictation-actions";
+    actions.append(
+      makeButton("√", () => submitQuickDictation(preparedCard, true, filtered.length), "quick-result-button correct"),
+      makeButton("×", () => submitQuickDictation(preparedCard, false, filtered.length), "quick-result-button wrong")
+    );
+
+    row.append(title, accuracy, actions);
+    list.append(row);
+  });
+
+  dictationPanel.append(list);
+}
+
+async function submitQuickDictation(card, isCorrect, pendingBefore) {
+  if (submittingResult) return;
+  submittingResult = true;
+  try {
+    const session = takeNextCard(createDictationSession([card], currentItems, {
+      today: toLocalDate(),
+      mode: "all"
+    }));
+    await recordCardResult(session, quickFeedbackForCard(session.currentCard, isCorrect));
+    await recordQuickAchievement(session.date, pendingBefore);
+    await refresh();
+    renderDictationList(dictationFilterMode);
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    submittingResult = false;
+  }
+}
+
+async function recordQuickAchievement(date, pendingBefore) {
+  const settings = await getSettings();
+  const records = settings?.dailyAchievementRecords || {};
+  const existing = records[date] || {};
+  const completedCount = (existing.completedCount || 0) + 1;
+  const targetCount = Math.max(existing.targetCount || 0, pendingBefore || 0, completedCount);
+  const nextRecords = upsertDailyAchievement(records, date, { targetCount, completedCount });
+  const updated = await updateSettings({ dailyAchievementRecords: nextRecords });
+  const achievement = updated.dailyAchievementRecords[date];
+  syncDictationRewardToSharedLedger(achievement);
+
+  if (achievement?.rate === 100 && !celebratedDates.has(date)) {
+    launchCelebration(date);
+  }
 }
 
 function renderFeedbackControls(article, view, card) {

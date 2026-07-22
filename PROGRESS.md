@@ -1273,3 +1273,21 @@ Verification:
 
 - `node tests/final-audit.test.js`: passed, 6 tests.
 - `npm test`: passed, 96 tests.
+
+## 2026-07-22 Dictation List Mode
+
+Current phase: post-publish usability update.
+
+Completed:
+
+- Added a separate `听写模式` next to the existing card-based `背默模式`.
+- In `听写模式`, today's due content is shown as a compact list with item text, `正确/总数` accuracy such as `7/8`, and `√` / `×` result buttons.
+- Kept the existing `背默模式` for detailed spelling/phonetic feedback, wrong-character selection, related-word confirmation, and same-day retry flow.
+- Wired quick-list results through the existing review engine in the module app so due dates and review events continue to update consistently.
+- Added a static HTML fallback list recorder so direct file / iPad usage can still mark basic correct or wrong results.
+- Bumped dictation app asset query strings for GitHub Pages and iPad cache refresh.
+
+Verification:
+
+- Initial sandboxed `npm test` was blocked by Windows `spawn EPERM`.
+- Re-ran `npm test` with approved external PowerShell permissions: passed, 101 tests.

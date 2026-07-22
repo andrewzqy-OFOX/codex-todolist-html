@@ -146,6 +146,28 @@
     db.close();
   }
 
+  async function updateItem(item) {
+    const next = { ...item, updatedAt: new Date().toISOString() };
+    const db = await openDb();
+    const tx = db.transaction("items", "readwrite");
+    tx.objectStore("items").put(next);
+    await transactionDone(tx);
+    db.close();
+    return next;
+  }
+
+  async function addReviewEvent(event) {
+    const db = await openDb();
+    const tx = db.transaction("reviewEvents", "readwrite");
+    tx.objectStore("reviewEvents").add({
+      id: localId("review"),
+      createdAt: new Date().toISOString(),
+      ...event
+    });
+    await transactionDone(tx);
+    db.close();
+  }
+
   function metadata(kind, originalQuery, data) {
     const now = new Date().toISOString();
     return {
@@ -344,6 +366,62 @@
       total,
       percent: total ? Math.round((totals.correct / total) * 100) : 0
     };
+  }
+
+  function nextTrackAfterResult(track, isCorrect, date) {
+    const intervals = [1, 3, 7, 15, 30, 60];
+    const current = track || createTrack(date);
+    if (!isCorrect) {
+      return {
+        ...current,
+        stage: 0,
+        correctStreak: 0,
+        totalWrong: (current.totalWrong || 0) + 1,
+        nextReviewDate: addDays(date, 1),
+        status: "learning",
+        lastReviewedDate: date
+      };
+    }
+    const stage = Math.min((current.stage || 0) + 1, intervals.length);
+    return {
+      ...current,
+      stage,
+      correctStreak: (current.correctStreak || 0) + 1,
+      totalCorrect: (current.totalCorrect || 0) + 1,
+      nextReviewDate: addDays(date, intervals[Math.min(stage - 1, intervals.length - 1)]),
+      status: stage >= intervals.length ? "mastered" : "learning",
+      lastReviewedDate: date
+    };
+  }
+
+  function earliestReviewDate(item) {
+    const dates = trackList(item)
+      .filter((track) => track.active !== false && track.nextReviewDate)
+      .map((track) => track.nextReviewDate)
+      .sort();
+    return dates[0] || item.nextReviewDate;
+  }
+
+  async function recordFallbackDictationResult(item, isCorrect) {
+    const date = today();
+    const next = { ...item };
+    if (item.type === "english_word") {
+      next.spellingTrack = nextTrackAfterResult(item.spellingTrack, isCorrect, date);
+      next.phoneticTrack = nextTrackAfterResult(item.phoneticTrack, isCorrect, date);
+    } else {
+      next.wholeItemTrack = nextTrackAfterResult(item.wholeItemTrack, isCorrect, date);
+    }
+    next.nextReviewDate = earliestReviewDate(next);
+    await updateItem(next);
+    await addReviewEvent({
+      itemId: item.id,
+      reviewUnit: item.type === "english_word" ? "english" : "whole_item",
+      date,
+      result: isCorrect ? "correct" : "incorrect",
+      wrongCharacters: [],
+      isSameDayRetry: false,
+      dimensions: item.type === "english_word" ? ["spelling", "phonetic"] : ["whole_item"]
+    });
   }
 
   function reviewLabel(item) {
@@ -568,27 +646,54 @@
     try {
       const date = today();
       const items = await getItems();
-      const dueItems = filterByMode(items.filter((item) => item.nextReviewDate <= date), mode);
+      const dueItems = filterByMode(items.filter((item) => item.type !== "poem" && item.nextReviewDate <= date), mode);
       $("[data-view='dictation']")?.click();
       const panel = $("#dictation-panel");
       if (!panel) return;
       panel.replaceChildren();
       if (!dueItems.length) {
-        panel.textContent = "这个范围今天没有可背默内容。";
+        panel.textContent = "这个范围今天没有可听写内容。";
         return;
       }
-      dueItems.forEach((item, index) => {
-        const card = document.createElement("article");
-        card.className = "dictation-card";
-        const title = document.createElement("div");
-        title.className = "card-title";
-        title.textContent = `${index + 1}. ${item.text}`;
-        const meta = document.createElement("div");
-        meta.className = "muted";
-        meta.textContent = "静态兜底版已筛出内容；完整记录正确/错误请刷新后使用主程序。";
-        card.append(title, meta);
-        panel.append(card);
+      const list = document.createElement("div");
+      list.className = "quick-dictation-list";
+      dueItems.forEach((item) => {
+        const accuracy = itemAccuracy(item);
+        const row = document.createElement("article");
+        row.className = "quick-dictation-row";
+        const title = document.createElement("strong");
+        title.className = "quick-dictation-name";
+        title.textContent = item.text;
+        const ratio = document.createElement("span");
+        ratio.className = "quick-dictation-accuracy";
+        ratio.textContent = `${accuracy.correct}/${accuracy.total}`;
+        const actions = document.createElement("div");
+        actions.className = "quick-dictation-actions";
+        const correct = document.createElement("button");
+        correct.type = "button";
+        correct.className = "quick-result-button correct";
+        correct.textContent = "√";
+        const wrong = document.createElement("button");
+        wrong.type = "button";
+        wrong.className = "quick-result-button wrong";
+        wrong.textContent = "×";
+        correct.addEventListener("click", async () => {
+          await recordFallbackDictationResult(item, true);
+          toast("已记录正确。");
+          await startFallbackDictation(mode);
+          await refresh();
+        });
+        wrong.addEventListener("click", async () => {
+          await recordFallbackDictationResult(item, false);
+          toast("已记录错误，明天继续复习。");
+          await startFallbackDictation(mode);
+          await refresh();
+        });
+        actions.append(correct, wrong);
+        row.append(title, ratio, actions);
+        list.append(row);
       });
+      panel.append(list);
     } catch (error) {
       toast(error.message || "读取背默内容失败。", true);
     }
@@ -685,6 +790,14 @@
   }
 
   function bindModeButtons() {
+    $all("[data-dictation-ui]").forEach((button) => {
+      button.addEventListener("click", () => {
+        $all("[data-dictation-ui]").forEach((item) => item.classList.toggle("active", item === button));
+        const panel = $("#dictation-panel");
+        if (panel) panel.textContent = button.dataset.dictationUi === "list" ? "请选择下方范围开始听写。" : "请选择下方范围开始背默。";
+      });
+    });
+
     $all("[data-start-mode]").forEach((button) => {
       button.addEventListener("click", () => startFallbackDictation(button.dataset.startMode || "all"));
     });

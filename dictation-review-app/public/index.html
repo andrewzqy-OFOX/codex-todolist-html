@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>小葵の背默</title>
-    <link rel="stylesheet" href="./css/styles.css?v=20260719-clear-sw-cache">
+    <link rel="stylesheet" href="./css/styles.css?v=20260722-list-mode">
     <link rel="apple-touch-icon" href="./assets/xiaokui-icon.png">
     <link rel="icon" href="./assets/xiaokui-icon.png">
     <link rel="manifest" href="./manifest.webmanifest">
@@ -61,6 +61,10 @@
 
         <section id="view-dictation" class="view panel" aria-labelledby="dictation-title">
           <h2 id="dictation-title">背默</h2>
+          <div class="dictation-view-toggle" aria-label="选择记录模式">
+            <button class="active" type="button" data-dictation-ui="card">背默模式</button>
+            <button type="button" data-dictation-ui="list">听写模式</button>
+          </div>
           <div class="task-actions mode-actions dictation-mode-actions" aria-label="选择背默范围">
             <button class="primary-action" type="button" data-start-mode="all">全部背默</button>
             <button type="button" data-start-mode="english">English Words</button>
@@ -211,7 +215,7 @@
           .catch(() => {});
       }
     </script>
-    <script src="./js/static-fallback.js?v=20260719-clear-sw-cache"></script>
-    <script type="module" src="./js/app.js?v=20260719-clear-sw-cache"></script>
+    <script src="./js/static-fallback.js?v=20260722-list-mode"></script>
+    <script type="module" src="./js/app.js?v=20260722-list-mode"></script>
   </body>
 </html>
