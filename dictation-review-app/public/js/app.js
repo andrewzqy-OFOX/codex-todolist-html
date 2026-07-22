@@ -94,7 +94,16 @@ async function archiveLibraryItem(id) {
 }
 
 function renderLibraryView() {
-  renderLibrarySummary(librarySummary, allLibraryItems, reviewEvents, toLocalDate());
+  const showsSummary = libraryFilter === "all";
+  if (librarySummary) librarySummary.hidden = !showsSummary;
+  if (libraryList) libraryList.hidden = showsSummary;
+
+  if (showsSummary) {
+    renderLibrarySummary(librarySummary, allLibraryItems, reviewEvents, toLocalDate());
+    libraryList?.replaceChildren();
+    return;
+  }
+
   renderLibrary(libraryList, filterLibraryItems(currentItems, libraryFilter), archiveLibraryItem);
 }
 

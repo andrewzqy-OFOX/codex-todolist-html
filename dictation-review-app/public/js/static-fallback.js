@@ -679,6 +679,15 @@
   function renderLibrary(items) {
     const container = $("#library-list");
     if (!container) return;
+    const summary = $("#library-summary");
+    const showsSummary = libraryFilter === "all";
+    if (summary) summary.hidden = !showsSummary;
+    container.hidden = showsSummary;
+    if (showsSummary) {
+      container.replaceChildren();
+      return;
+    }
+
     const visibleItems = filterByMode(items, libraryFilter);
     container.replaceChildren();
     if (!visibleItems.length) {

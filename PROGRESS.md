@@ -1358,3 +1358,18 @@ Verification:
 - `node tests/library-stats.test.js`: passed, 1 test.
 - `node tests/final-audit.test.js`: passed, 6 tests.
 - `npm test`: passed, 103 tests.
+
+## 2026-07-22 Library Summary-Only All Filter
+
+Current phase: post-publish Library interaction polish.
+
+Completed:
+
+- Changed the Library `全部内容` filter into a summary-only overview.
+- Kept `English Words`, `中文生词`, and `古诗词` filters as concrete item lists.
+- Applied the same behavior to the static fallback path.
+- Updated cache-busting strings for GitHub Pages and iPad refreshes.
+
+Verification:
+
+- `npm test`: passed, 103 tests.
