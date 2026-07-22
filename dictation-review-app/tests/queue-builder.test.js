@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { buildTodayQueue, buildTodayStats, filterQueueByMode, scheduleSameDayRetry } from "../public/js/queue-builder.js";
+import { DAILY_CATEGORY_LIMITS, buildTodayQueue, buildTodayStats, filterQueueByMode, scheduleSameDayRetry } from "../public/js/queue-builder.js";
 import { createChineseItem, createEnglishItem } from "../public/js/review-engine.js";
 import { ENGLISH_DIMENSIONS, TRACK_STATUSES } from "../public/js/review-types.js";
 
@@ -52,6 +52,28 @@ test("today stats match the visible start-button categories", () => {
   assert.equal(stats.chineseCount, 1);
   assert.equal(stats.poemCount, 1);
   assert.equal(stats.totalCount, 3);
+});
+
+test("today queue limits each subject category and leaves overflow due for later days", () => {
+  const englishItems = Array.from({ length: 45 }, (_, index) =>
+    createEnglishItem({ id: `english-${index}`, text: `word${index}`, today: "2026-07-18" })
+  );
+  const chineseItems = Array.from({ length: 42 }, (_, index) =>
+    createChineseItem({ id: `chinese-${index}`, text: `词语${index}`, today: "2026-07-18" })
+  );
+  const poemItems = Array.from({ length: 12 }, (_, index) =>
+    createChineseItem({ id: `poem-${index}`, text: `诗句${index}`, today: "2026-07-18", type: "poem_line" })
+  );
+
+  const queue = buildTodayQueue([...englishItems, ...chineseItems, ...poemItems], "2026-07-18");
+
+  assert.equal(filterQueueByMode(queue, "english").length, DAILY_CATEGORY_LIMITS.english);
+  assert.equal(filterQueueByMode(queue, "chinese").length, DAILY_CATEGORY_LIMITS.chinese);
+  assert.equal(filterQueueByMode(queue, "poem").length, DAILY_CATEGORY_LIMITS.poem);
+  assert.equal(queue.length, DAILY_CATEGORY_LIMITS.english + DAILY_CATEGORY_LIMITS.chinese + DAILY_CATEGORY_LIMITS.poem);
+  assert.equal(englishItems[40].spellingTrack.nextReviewDate, "2026-07-18");
+  assert.equal(chineseItems[40].wholeItemTrack.nextReviewDate, "2026-07-18");
+  assert.equal(poemItems[10].wholeItemTrack.nextReviewDate, "2026-07-18");
 });
 
 test("today queue includes overdue, due, and newly confirmed items without overdue penalty", () => {

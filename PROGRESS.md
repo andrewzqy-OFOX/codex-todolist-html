@@ -1291,3 +1291,21 @@ Verification:
 
 - Initial sandboxed `npm test` was blocked by Windows `spawn EPERM`.
 - Re-ran `npm test` with approved external PowerShell permissions: passed, 101 tests.
+
+## 2026-07-22 Daily Subject Limits
+
+Current phase: post-publish workload control update.
+
+Completed:
+
+- Added daily formal workload caps at the queue-builder level: English 40, Chinese words/phrases 40, and poem lines 10.
+- Kept overflow due items unchanged so they roll into later days through the existing `nextReviewDate <= today` rule.
+- Applied the same caps to the static fallback used by direct HTML / iPad-style access.
+- Updated product specification and acceptance tests to document the daily caps.
+- Updated cache-busting strings for GitHub Pages and iPad refreshes.
+
+Verification:
+
+- `node tests/queue-builder.test.js`: passed, 8 tests.
+- `node tests/final-audit.test.js`: passed, 6 tests.
+- `npm test`: passed, 102 tests.

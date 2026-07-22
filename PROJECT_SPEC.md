@@ -108,6 +108,14 @@ When a dimension is marked incorrect:
 
 Missed or overdue work is not penalized. Any item with `nextReviewDate <= today` appears in today's task list.
 
+Daily formal dictation is capped by content type to keep the workload reasonable:
+
+- English words: at most 40 cards per day.
+- Chinese words or phrases, including their character reinforcement cards: at most 40 cards per day.
+- Classical poem lines, including their character reinforcement cards: at most 10 cards per day.
+
+When more content is due than the daily cap allows, the overflow is not penalized or rescheduled immediately. It remains due and will continue to roll into later days because `nextReviewDate <= today`.
+
 ## Wrong-Character Reinforcement
 
 When a Chinese word, phrase, or poem line has individual wrong characters:
@@ -135,4 +143,3 @@ When a Chinese word, phrase, or poem line has individual wrong characters:
 ## Implementation Boundary For This Round
 
 This round creates project specifications and planning documents only. It must not implement complete business functionality.
-

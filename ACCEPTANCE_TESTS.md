@@ -84,6 +84,8 @@ These tests define the product boundary and expected behavior. They should guide
 - Today excludes archived content.
 - Today includes same-day retries before the session is completed.
 - Today does not penalize overdue items.
+- Today caps formal workload by visible content type: English words at 40, Chinese words/phrases at 40, and poem lines at 10.
+- Due content above those caps remains due and rolls into later days instead of being deleted or penalized.
 
 ## Dictation Tests
 
@@ -110,4 +112,3 @@ These tests define the product boundary and expected behavior. They should guide
 - Restore imports a valid backup.
 - Restore validates expected shape before replacing or merging data.
 - Backup and restore do not require a separate main page.
-

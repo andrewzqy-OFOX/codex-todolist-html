@@ -340,6 +340,19 @@
     return items;
   }
 
+  function applyDailyCategoryLimits(items) {
+    const counts = { english_word: 0, chinese_phrase: 0, poem_line: 0 };
+    const limits = { english_word: 40, chinese_phrase: 40, poem_line: 10 };
+    return items.filter((item) => {
+      if (item.type === "poem") return false;
+      const limit = limits[item.type];
+      if (!limit) return true;
+      if (counts[item.type] >= limit) return false;
+      counts[item.type] += 1;
+      return true;
+    });
+  }
+
   function trackList(item) {
     const tracks = [];
     if (item.spellingTrack) tracks.push(item.spellingTrack);
@@ -437,7 +450,7 @@
     const container = $("#today-summary");
     if (!container) return;
     const date = today();
-    const due = items.filter((item) => item.nextReviewDate <= date);
+    const due = applyDailyCategoryLimits(items.filter((item) => item.nextReviewDate <= date));
     const rows = [
       ["English Words", due.filter((item) => item.type === "english_word").length],
       ["中文生词", due.filter((item) => item.type === "chinese_phrase").length],
@@ -646,7 +659,7 @@
     try {
       const date = today();
       const items = await getItems();
-      const dueItems = filterByMode(items.filter((item) => item.type !== "poem" && item.nextReviewDate <= date), mode);
+      const dueItems = filterByMode(applyDailyCategoryLimits(items.filter((item) => item.nextReviewDate <= date)), mode);
       $("[data-view='dictation']")?.click();
       const panel = $("#dictation-panel");
       if (!panel) return;

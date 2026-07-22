@@ -167,7 +167,7 @@ test("Old settings without reward records still render recent seven day summary 
   assert.equal(summary[0].targetCount, 0);
 });
 
-test("Today queue handles about 1000 active study items", async () => {
+test("Today queue handles about 1000 active study items within daily English limit", async () => {
   const items = Array.from({ length: 1000 }, (_, index) =>
     buildEnglishItemFromEnrichment({
       ...englishDraft,
@@ -182,6 +182,7 @@ test("Today queue handles about 1000 active study items", async () => {
 
   const queue = buildTodayQueue(items, "2026-07-18");
 
-  assert.equal(queue.length, 1000);
+  assert.equal(queue.length, 40);
   assert.equal(queue.every((card) => card.cardType === "english"), true);
+  assert.equal(items[40].spellingTrack.nextReviewDate, "2026-07-18");
 });

@@ -7,6 +7,12 @@ import {
 } from "./review-types.js";
 import { isTrackDue } from "./review-engine.js";
 
+export const DAILY_CATEGORY_LIMITS = Object.freeze({
+  english: 40,
+  chinese: 40,
+  poem: 10
+});
+
 function isActiveItem(item) {
   return item.status !== "archived";
 }
@@ -71,7 +77,31 @@ export function buildTodayQueue(items, today) {
     }
   }
 
-  return avoidConsecutiveSameCharacter(cards);
+  return applyDailyCategoryLimits(avoidConsecutiveSameCharacter(cards));
+}
+
+function categoryKeyForCard(card) {
+  if (card.itemType === ITEM_TYPES.englishWord) return "english";
+  if (card.itemType === ITEM_TYPES.chinesePhrase) return "chinese";
+  if (card.itemType === ITEM_TYPES.poemLine) return "poem";
+  return "other";
+}
+
+export function applyDailyCategoryLimits(cards, limits = DAILY_CATEGORY_LIMITS) {
+  const counts = {
+    english: 0,
+    chinese: 0,
+    poem: 0
+  };
+
+  return cards.filter((card) => {
+    const key = categoryKeyForCard(card);
+    const limit = limits[key];
+    if (!limit) return true;
+    if (counts[key] >= limit) return false;
+    counts[key] += 1;
+    return true;
+  });
 }
 
 export function buildTodayStats(items, today) {
@@ -91,7 +121,7 @@ export function buildTodayStats(items, today) {
     if (card.isNewToday) stats.newCount += 1;
     if (card.itemType === ITEM_TYPES.englishWord) stats.englishCount += 1;
     if (card.itemType === ITEM_TYPES.chinesePhrase) stats.chineseCount += 1;
-    if (card.itemType === ITEM_TYPES.poemLine && card.cardType !== "character") stats.poemCount += 1;
+    if (card.itemType === ITEM_TYPES.poemLine) stats.poemCount += 1;
 
     if (card.cardType === "character") {
       stats.characterReviewCount += 1;
@@ -118,7 +148,7 @@ export function filterQueueByMode(queue, mode = "all") {
   if (mode === "all") return [...queue];
   if (mode === "english") return queue.filter((card) => card.itemType === ITEM_TYPES.englishWord);
   if (mode === "chinese") return queue.filter((card) => card.itemType === ITEM_TYPES.chinesePhrase);
-  if (mode === "poem") return queue.filter((card) => card.itemType === ITEM_TYPES.poemLine && card.cardType !== "character");
+  if (mode === "poem") return queue.filter((card) => card.itemType === ITEM_TYPES.poemLine);
   if (mode === "character") return queue.filter((card) => card.cardType === "character");
   return [];
 }
