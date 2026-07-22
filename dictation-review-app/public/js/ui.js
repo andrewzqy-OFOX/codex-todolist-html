@@ -177,7 +177,16 @@ export function renderLibrary(container, items, onArchive) {
     actions.className = "library-actions";
     const archiveButton = document.createElement("button");
     archiveButton.type = "button";
-    archiveButton.textContent = "归档";
+    archiveButton.className = "icon-button archive-icon-button";
+    archiveButton.setAttribute("aria-label", "归档");
+    archiveButton.title = "归档";
+    archiveButton.innerHTML = `
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18">
+        <path d="M4 7.5h16l-1.2 11H5.2L4 7.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M6.5 5h11l1 2.5h-13L6.5 5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M9 11h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    `;
     archiveButton.addEventListener("click", () => onArchive(item.id));
     actions.append(archiveButton);
 

@@ -1013,6 +1013,25 @@ textarea {
   gap: 8px;
 }
 
+.icon-button.archive-icon-button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  padding: 0;
+  border-radius: 50%;
+  color: var(--primary-dark);
+  background: rgba(246, 253, 255, 0.86);
+  box-shadow: none;
+}
+
+.icon-button.archive-icon-button:hover {
+  color: #ffffff;
+  border-color: var(--primary-dark);
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+}
+
 .library-footer-tools {
   display: flex;
   align-items: center;
@@ -1405,8 +1424,8 @@ textarea {
   }
 
   .library-actions {
-    width: 100%;
-    justify-content: flex-start;
+    width: auto;
+    justify-content: flex-end;
   }
 
   .dance-stage {

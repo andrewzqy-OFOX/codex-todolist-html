@@ -1309,3 +1309,18 @@ Verification:
 - `node tests/queue-builder.test.js`: passed, 8 tests.
 - `node tests/final-audit.test.js`: passed, 6 tests.
 - `npm test`: passed, 102 tests.
+
+## 2026-07-22 Library Archive Icon
+
+Current phase: post-publish UI polish.
+
+Completed:
+
+- Replaced the Library card `归档` text button with a compact drawer icon button.
+- Kept `aria-label` and `title` as `归档` so the meaning remains available to assistive tools and hover users.
+- Adjusted responsive Library action alignment so the icon stays compact on iPad-sized screens.
+- Updated cache-busting strings for GitHub Pages and iPad refreshes.
+
+Verification:
+
+- `npm test`: passed, 102 tests.
