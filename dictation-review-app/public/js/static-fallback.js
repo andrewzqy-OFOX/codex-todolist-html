@@ -96,7 +96,7 @@
     });
   }
 
-  async function getItems() {
+  async function getItems(includeArchived = false) {
     const db = await openDb();
     const tx = db.transaction("items", "readonly");
     const request = tx.objectStore("items").getAll();
@@ -105,7 +105,19 @@
       request.onerror = () => reject(request.error);
     });
     db.close();
-    return items.filter((item) => item.status !== "archived");
+    return includeArchived ? items : items.filter((item) => item.status !== "archived");
+  }
+
+  async function getReviewEvents() {
+    const db = await openDb();
+    const tx = db.transaction("reviewEvents", "readonly");
+    const request = tx.objectStore("reviewEvents").getAll();
+    const events = await new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result || []);
+      request.onerror = () => reject(request.error);
+    });
+    db.close();
+    return events;
   }
 
   async function getSettings() {
@@ -366,6 +378,68 @@
     const tracks = trackList(item);
     if (item.type === "poem") return false;
     return tracks.length > 0 && tracks.every((track) => track.status === "mastered" || track.active === false);
+  }
+
+  function libraryCategory(item) {
+    if (item.type === "english_word") return "english";
+    if (item.type === "chinese_phrase") return "chinese";
+    if (item.type === "poem_line") return "poem";
+    return null;
+  }
+
+  function renderLibrarySummary(allItems, events, date) {
+    const container = $("#library-summary");
+    if (!container) return;
+    const buckets = {
+      all: { label: "全部内容", total: 0, mastered: 0, archived: 0, correct: 0, totalEvents: 0 },
+      english: { label: "English Words", total: 0, mastered: 0, archived: 0, correct: 0, totalEvents: 0 },
+      chinese: { label: "中文生词", total: 0, mastered: 0, archived: 0, correct: 0, totalEvents: 0 },
+      poem: { label: "古诗词", total: 0, mastered: 0, archived: 0, correct: 0, totalEvents: 0 }
+    };
+    const categoryById = new Map();
+    allItems.forEach((item) => {
+      const category = libraryCategory(item);
+      if (!category) return;
+      categoryById.set(item.id, category);
+      buckets[category].total += 1;
+      buckets.all.total += 1;
+      if (item.status === "archived") {
+        buckets[category].archived += 1;
+        buckets.all.archived += 1;
+      }
+      if (item.status !== "archived" && isMasteredItem(item)) {
+        buckets[category].mastered += 1;
+        buckets.all.mastered += 1;
+      }
+    });
+    const startDate = addDays(date, -6);
+    events.forEach((event) => {
+      if (!event?.date || event.date < startDate || event.date > date) return;
+      const category = categoryById.get(event.itemId);
+      if (!category) return;
+      buckets[category].totalEvents += 1;
+      buckets.all.totalEvents += 1;
+      if (event.result === "correct") {
+        buckets[category].correct += 1;
+        buckets.all.correct += 1;
+      }
+    });
+    container.replaceChildren();
+    [buckets.all, buckets.english, buckets.chinese, buckets.poem].forEach((bucket) => {
+      const accuracy = bucket.totalEvents ? Math.round((bucket.correct / bucket.totalEvents) * 100) : 0;
+      const card = document.createElement("article");
+      card.className = "library-summary-card";
+      card.innerHTML = `
+        <strong>${bucket.label}</strong>
+        <div class="library-summary-main">${bucket.total}</div>
+        <div class="library-summary-meta">
+          <span>已熟悉 ${bucket.mastered}</span>
+          <span>已归档 ${bucket.archived}</span>
+          <span>近7天 ${bucket.totalEvents ? `${accuracy}%` : "暂无"}</span>
+        </div>
+      `;
+      container.append(card);
+    });
   }
 
   function itemAccuracy(item) {
@@ -641,11 +715,14 @@
     try {
       const date = today();
       $("#today-date").textContent = date;
-      const items = await getItems();
+      const allItems = await getItems(true);
+      const items = allItems.filter((item) => item.status !== "archived");
+      const events = await getReviewEvents();
       const settings = await getSettings();
       const dueCount = items.filter((item) => item.nextReviewDate <= date).length;
       renderTodaySummary(items);
       renderLearnedSummary(items);
+      renderLibrarySummary(allItems, events, date);
       renderRewardSummary(settings, dueCount, date);
       renderRewardRedemptions(settings);
       renderAchievementHistory(settings, date);

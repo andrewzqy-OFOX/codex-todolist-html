@@ -1,4 +1,4 @@
-import { toLocalDate } from "./date-utils.js";
+import { addDays, toLocalDate } from "./date-utils.js";
 
 export function setupNavigation() {
   const navButtons = document.querySelectorAll(".nav-button");
@@ -113,6 +113,92 @@ export function summarizeLearned(items) {
   const poem = items.filter((item) => item.type === "poem_line" && isMasteredItem(item)).length;
 
   return { english, chinese, poem, total: english + chinese + poem };
+}
+
+function libraryCategory(item) {
+  if (item.type === "english_word") return "english";
+  if (item.type === "chinese_phrase") return "chinese";
+  if (item.type === "poem_line") return "poem";
+  return null;
+}
+
+function emptyLibraryBucket(label) {
+  return {
+    label,
+    total: 0,
+    mastered: 0,
+    archived: 0,
+    recentCorrect: 0,
+    recentTotal: 0,
+    recentAccuracy: 0
+  };
+}
+
+export function summarizeLibraryStats(items, reviewEvents = [], today = toLocalDate()) {
+  const buckets = {
+    all: emptyLibraryBucket("全部内容"),
+    english: emptyLibraryBucket("English Words"),
+    chinese: emptyLibraryBucket("中文生词"),
+    poem: emptyLibraryBucket("古诗词")
+  };
+  const itemCategoryById = new Map();
+
+  for (const item of items) {
+    const category = libraryCategory(item);
+    if (!category) continue;
+    itemCategoryById.set(item.id, category);
+    buckets[category].total += 1;
+    buckets.all.total += 1;
+    if (item.status === "archived") {
+      buckets[category].archived += 1;
+      buckets.all.archived += 1;
+    }
+    if (item.status !== "archived" && isMasteredItem(item)) {
+      buckets[category].mastered += 1;
+      buckets.all.mastered += 1;
+    }
+  }
+
+  const startDate = addDays(today, -6);
+  for (const event of reviewEvents) {
+    if (!event?.date || event.date < startDate || event.date > today) continue;
+    const category = itemCategoryById.get(event.itemId);
+    if (!category) continue;
+    buckets[category].recentTotal += 1;
+    buckets.all.recentTotal += 1;
+    if (event.result === "correct") {
+      buckets[category].recentCorrect += 1;
+      buckets.all.recentCorrect += 1;
+    }
+  }
+
+  for (const bucket of Object.values(buckets)) {
+    bucket.recentAccuracy = bucket.recentTotal ? Math.round((bucket.recentCorrect / bucket.recentTotal) * 100) : 0;
+  }
+
+  return buckets;
+}
+
+export function renderLibrarySummary(container, items, reviewEvents = [], today = toLocalDate()) {
+  if (!container) return;
+  const stats = summarizeLibraryStats(items, reviewEvents, today);
+  const rows = [stats.all, stats.english, stats.chinese, stats.poem];
+  container.replaceChildren();
+
+  for (const row of rows) {
+    const card = document.createElement("article");
+    card.className = "library-summary-card";
+    card.innerHTML = `
+      <strong>${row.label}</strong>
+      <div class="library-summary-main">${row.total}</div>
+      <div class="library-summary-meta">
+        <span>已熟悉 ${row.mastered}</span>
+        <span>已归档 ${row.archived}</span>
+        <span>近7天 ${row.recentTotal ? `${row.recentAccuracy}%` : "暂无"}</span>
+      </div>
+    `;
+    container.append(card);
+  }
 }
 
 export function renderLearnedSummary(container, items) {

@@ -13,7 +13,7 @@ import {
   tokenizeText
 } from "./dictation-session.js";
 import { dictationListLabel, formatAccuracyRatio, quickFeedbackForCard } from "./dictation-list.js";
-import { archiveItem, getAllItems, openDatabase } from "./db.js";
+import { archiveItem, getAllFromStore, getAllItems, openDatabase } from "./db.js";
 import { getSettings, updateSettings } from "./db.js";
 import { toLocalDate } from "./date-utils.js";
 import {
@@ -27,7 +27,7 @@ import {
   upsertDailyAchievement
 } from "./daily-rewards.js";
 import { buildTodayQueue, buildTodayStats, filterQueueByMode } from "./queue-builder.js";
-import { renderLearnedSummary, renderLibrary, renderTodaySummary, setupNavigation, showToast } from "./ui.js";
+import { renderLearnedSummary, renderLibrary, renderLibrarySummary, renderTodaySummary, setupNavigation, showToast } from "./ui.js";
 
 window.__xiaokuiModuleReady = true;
 
@@ -40,6 +40,7 @@ const rewardRedeemProduct = document.querySelector("#reward-redeem-product");
 const rewardRedeemAmount = document.querySelector("#reward-redeem-amount");
 const rewardRedeemList = document.querySelector("#reward-redeem-list");
 const achievementHistory = document.querySelector("#achievement-history");
+const librarySummary = document.querySelector("#library-summary");
 const libraryList = document.querySelector("#library-list");
 const libraryEnrichAllButton = document.querySelector("#library-enrich-all-button");
 const dictationPanel = document.querySelector("#dictation-panel");
@@ -63,6 +64,8 @@ const BILIBILI_DANCE_VIDEOS = [
 ];
 
 let currentItems = [];
+let allLibraryItems = [];
+let reviewEvents = [];
 let currentQueue = [];
 let currentSession = null;
 let submittingResult = false;
@@ -91,6 +94,7 @@ async function archiveLibraryItem(id) {
 }
 
 function renderLibraryView() {
+  renderLibrarySummary(librarySummary, allLibraryItems, reviewEvents, toLocalDate());
   renderLibrary(libraryList, filterLibraryItems(currentItems, libraryFilter), archiveLibraryItem);
 }
 
@@ -99,7 +103,9 @@ async function refresh() {
   const settings = await getSettings();
   const achievementRecords = settings?.dailyAchievementRecords || {};
   const redemptions = settings?.rewardRedemptions || [];
-  currentItems = await getAllItems();
+  allLibraryItems = await getAllItems(true);
+  currentItems = allLibraryItems.filter((item) => item.status !== "archived");
+  reviewEvents = await getAllFromStore("reviewEvents");
   currentQueue = buildTodayQueue(currentItems, today);
   todayDate.textContent = today;
   renderTodaySummary(todaySummary, buildTodayStats(currentItems, today));

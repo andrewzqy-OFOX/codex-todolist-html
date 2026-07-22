@@ -1339,3 +1339,22 @@ Completed:
 Verification:
 
 - `npm test`: passed, 102 tests.
+
+## 2026-07-22 Library Category Statistics
+
+Current phase: post-publish Library visibility update.
+
+Completed:
+
+- Added Library category statistics under the filter buttons for all content, English words, Chinese words, and poem lines.
+- Each statistic card shows total saved items, mastered items, archived items, and recent 7-day accuracy.
+- Recent 7-day accuracy is calculated from recorded review events and excludes older attempts.
+- The statistics include archived items in counts while the visible Library list still shows only active items.
+- Added the same summary rendering to the static fallback path used by direct HTML / iPad-style access.
+- Updated cache-busting strings for GitHub Pages and iPad refreshes.
+
+Verification:
+
+- `node tests/library-stats.test.js`: passed, 1 test.
+- `node tests/final-audit.test.js`: passed, 6 tests.
+- `npm test`: passed, 103 tests.

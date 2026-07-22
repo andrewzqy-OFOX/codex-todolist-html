@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>小葵の背默</title>
-    <link rel="stylesheet" href="./css/styles.css?v=20260722-library-tools-row">
+    <link rel="stylesheet" href="./css/styles.css?v=20260722-library-stats">
     <link rel="apple-touch-icon" href="./assets/xiaokui-icon.png">
     <link rel="icon" href="./assets/xiaokui-icon.png">
     <link rel="manifest" href="./manifest.webmanifest">
@@ -86,6 +86,7 @@
             <button type="button" data-library-filter="chinese">中文生词</button>
             <button type="button" data-library-filter="poem">古诗词</button>
           </div>
+          <div id="library-summary" class="library-summary-grid" aria-label="学习库分类统计"></div>
           <div id="library-list" class="library-list">正在加载...</div>
           <div class="library-footer-tools">
             <button id="library-enrich-all-button" type="button">一键补全内容</button>
@@ -207,7 +208,7 @@
           .catch(() => {});
       }
     </script>
-    <script src="./js/static-fallback.js?v=20260722-library-tools-row"></script>
-    <script type="module" src="./js/app.js?v=20260722-library-tools-row"></script>
+    <script src="./js/static-fallback.js?v=20260722-library-stats"></script>
+    <script type="module" src="./js/app.js?v=20260722-library-stats"></script>
   </body>
 </html>
