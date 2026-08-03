@@ -1,4 +1,4 @@
-const CACHE_NAME = "xiaokui-todo-v11";
+const CACHE_NAME = "xiaokui-todo-v12";
 const NO_CACHE_PATHS = [
   "/codex-todolist-html/dictation-review-app/"
 ];
@@ -40,6 +40,16 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (NO_CACHE_PATHS.some((path) => url.pathname.startsWith(path))) {
     event.respondWith(fetch(event.request, { cache: "no-store" }));
+    return;
+  }
+  if (event.request.destination === "document" || url.pathname.endsWith(".html")) {
+    event.respondWith(
+      fetch(event.request, { cache: "no-store" }).then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        return response;
+      }).catch(() => caches.match(event.request))
+    );
     return;
   }
   event.respondWith(

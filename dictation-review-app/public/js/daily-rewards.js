@@ -64,7 +64,9 @@ export function rewardBalance(records = {}, redemptions = []) {
 function tasksForTodoDate(data, date) {
   const tasks = Array.isArray(data?.tasks) ? data.tasks : [];
   return tasks.filter((task) => {
-    if (task.type !== "daily") return task.date === date;
+    const archivedAt = String(task.archivedAt || "").slice(0, 10);
+    if (archivedAt && date > archivedAt) return false;
+    if (task.type !== "daily") return task.date === date || archivedAt === date;
     const startDate = String(task.createdAt || "").slice(0, 10);
     return !startDate || startDate <= date;
   });
@@ -90,7 +92,17 @@ function confirmedTodoDatesAscending(data) {
 
 export function calculateTodoListRewardSummary(todoData = {}, sharedEntries = []) {
   const todoRedeemed = (Array.isArray(todoData.redemptions) ? todoData.redemptions : []).reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-  const shared = (Array.isArray(sharedEntries) ? sharedEntries : []).reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+  const completedDates = new Set(confirmedTodoDatesAscending(todoData).filter((date) => {
+    const stats = todoDayStats(todoData, date);
+    return stats.total > 0 && stats.left === 0;
+  }));
+  const sharedEarned = (Array.isArray(sharedEntries) ? sharedEntries : [])
+    .filter((item) => {
+      const amount = Number(item.amount) || 0;
+      const date = String(item.date || "").slice(0, 10);
+      return amount > 0 && (!date || !completedDates.has(date));
+    })
+    .reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
   const sharedRedeemed = (Array.isArray(sharedEntries) ? sharedEntries : [])
     .filter((item) => Number(item.amount) < 0)
     .reduce((sum, item) => sum + Math.abs(Number(item.amount) || 0), 0);
@@ -120,8 +132,8 @@ export function calculateTodoListRewardSummary(todoData = {}, sharedEntries = []
     earned,
     penalty,
     redeemed,
-    shared,
-    balance: 10 + earned - penalty - todoRedeemed + shared
+    shared: sharedEarned,
+    balance: 10 + earned - penalty - redeemed + sharedEarned
   };
 }
 

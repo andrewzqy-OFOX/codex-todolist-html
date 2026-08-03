@@ -1359,6 +1359,45 @@ Verification:
 - `node tests/final-audit.test.js`: passed, 6 tests.
 - `npm test`: passed, 103 tests.
 
+## 2026-08-03 Weekly Accumulated-Time Tasks
+
+Current phase: post-publish task-type extension.
+
+Completed:
+
+- Added a `weekly` task type alongside daily-repeat and same-day tasks.
+- Added weekly target duration input, accepting formats such as `1.5 小时` or `90 分钟`.
+- Stored one editable completion duration per task and local date in `weeklyLogs`.
+- Calculated progress from local Monday-to-Sunday weeks and displayed completed time, target time, and remaining time on each weekly task card.
+- Kept weekly tasks outside daily completion and reward counts so an unfinished weekly target does not create a daily penalty.
+- Added focused regression coverage for weekly task storage and week-boundary calculation.
+
+Verification:
+
+- Todo-list inline JavaScript syntax check: passed.
+- `node --test tests/todo-list-regression.test.js`: passed, 4 tests.
+- `npm test`: passed, 108 tests.
+
+## 2026-07-29 Reward Deduplication and Task Archive Fix
+
+Current phase: post-publish persistence and reward consistency fix.
+
+Completed:
+
+- Counted a shared dictation reward only when its date is not already tracked by the todo list, preventing duplicate daily rewards.
+- Counted shared deductions in the displayed balance while keeping the todo list as the authority for tracked-day completion.
+- Archived deleted todo items from the selected date instead of removing their history, so deleted tasks no longer return after refresh.
+- Removed the refresh-time default-task merge that recreated missing user-deleted tasks.
+- Bumped the service-worker cache and made HTML documents network-first with an offline cache fallback.
+- Added focused reward and todo-list regression tests.
+
+Verification:
+
+- `node --check public/js/daily-rewards.js`: passed.
+- `node --check public/js/app.js`: passed.
+- `node --test tests/daily-rewards.test.js tests/todo-list-regression.test.js`: passed, 18 tests.
+- `npm test`: passed, 106 tests.
+
 ## 2026-07-22 Library Summary-Only All Filter
 
 Current phase: post-publish Library interaction polish.
@@ -1373,3 +1412,41 @@ Completed:
 Verification:
 
 - `npm test`: passed, 103 tests.
+
+## 2026-08-03 Weekly Task Section
+
+Current phase: post-publish weekly task usability refinement.
+
+Completed:
+
+- Moved weekly tasks into a dedicated `本周任务` section directly below the daily task section.
+- Added a weekly session-count target, supporting values such as `1 次` and `2 次`.
+- Weekly tasks can be duration-based, count-based, or require both the target duration and target session count.
+- Count-only weekly tasks can be completed by clicking `记一次` without entering a duration.
+- Made weekly tracking modes mutually exclusive in the display: duration targets show completed and remaining time only, while count targets show completed and remaining sessions only.
+- Added green completed chips and orange remaining chips, with the two values aligned on one row on wider layouts.
+- Removed the visible date-range chip from weekly task cards; weekly targets still use the local Monday-to-Sunday period internally.
+
+## 2026-08-03 Task Persistence and Reward Stability
+
+Current phase: post-publish persistence and reward consistency repair.
+
+Completed:
+
+- Kept archived tasks in confirmed/history statistics so deleting an unfinished task cannot turn an incomplete day into a rewarded complete day.
+- Changed shared reward deduplication to wait until the todo date is actually complete, preventing the balance from dropping as soon as a date is merely opened or partially started.
+- Preserved the existing archive-based deletion behavior across refreshes and kept the refresh-time default-task merge disabled.
+
+Verification:
+
+- Todo-list inline JavaScript syntax check: passed.
+- `node --test --test-isolation=none tests/todo-list-regression.test.js tests/daily-rewards.test.js`: passed, 22 tests.
+- `node --test --test-isolation=none`: passed, 110 tests.
+- Kept daily and weekly task filters synchronized while keeping the daily completion statistics focused on daily and same-day tasks.
+- Added weekly-panel layout rules for desktop, iPad, and phone widths.
+
+Verification:
+
+- Todo-list inline JavaScript syntax check: passed.
+- `node --test --test-isolation=none tests/todo-list-regression.test.js`: passed, 4 tests.
+- `node --test --test-isolation=none`: passed, 108 tests.

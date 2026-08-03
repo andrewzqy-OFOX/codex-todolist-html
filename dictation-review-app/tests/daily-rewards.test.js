@@ -133,12 +133,15 @@ test("todo-list reward bridge includes shared dictation ledger entries", () => {
     redemptions: [{ amount: 1 }]
   };
 
-  const result = calculateTodoListRewardSummary(todoData, [{ amount: 2 }, { amount: -1 }]);
+  const result = calculateTodoListRewardSummary(todoData, [
+    { date: "2026-07-18", amount: 2 },
+    { date: "2026-07-18", amount: -1 }
+  ]);
 
   assert.equal(result.earned, 2);
   assert.equal(result.redeemed, 2);
-  assert.equal(result.shared, 1);
-  assert.equal(result.balance, 12);
+  assert.equal(result.shared, 0);
+  assert.equal(result.balance, 10);
 });
 
 test("dictation reward sync upserts one shared ledger entry per date", () => {
@@ -172,13 +175,48 @@ test("dictation app reads todo-list balance when both apps share one origin", ()
   };
   const storage = memoryStorage({
     [TODO_LIST_STORAGE_KEY]: JSON.stringify(todoData),
-    [SHARED_REWARD_LEDGER_KEY]: JSON.stringify([{ amount: 2 }])
+    [SHARED_REWARD_LEDGER_KEY]: JSON.stringify([{ date: "2026-07-18", amount: 2 }])
   });
 
   const bridge = readTodoListRewardBridge(storage);
 
-  assert.equal(bridge.balance, 14);
-  assert.equal(bridge.shared, 2);
+  assert.equal(bridge.balance, 12);
+  assert.equal(bridge.shared, 0);
+});
+
+test("shared dictation reward for a tracked todo date is counted only once", () => {
+  const todoData = {
+    tasks: [{ id: "daily-1", type: "daily", createdAt: "2026-07-18" }],
+    completions: { "2026-07-18": { "daily-1": true } },
+    confirmations: { "2026-07-18": "2026-07-18T12:00:00.000Z" },
+    redemptions: []
+  };
+
+  const result = calculateTodoListRewardSummary(todoData, [
+    { source: "dictation-review", date: "2026-07-18", amount: 2 },
+    { source: "dictation-review", date: "2026-07-19", amount: 2 }
+  ]);
+
+  assert.equal(result.earned, 2);
+  assert.equal(result.shared, 2);
+  assert.equal(result.balance, 14);
+});
+
+test("shared dictation reward remains visible while the todo date is incomplete", () => {
+  const todoData = {
+    tasks: [{ id: "daily-1", type: "daily", createdAt: "2026-07-18" }],
+    completions: { "2026-07-18": {} },
+    confirmations: { "2026-07-18": "2026-07-18T12:00:00.000Z" },
+    redemptions: []
+  };
+
+  const result = calculateTodoListRewardSummary(todoData, [
+    { source: "dictation-review", date: "2026-07-18", amount: 2 }
+  ]);
+
+  assert.equal(result.earned, 0);
+  assert.equal(result.shared, 2);
+  assert.equal(result.balance, 12);
 });
 
 test("reward redemption validates input and syncs to shared ledger as a deduction", () => {
