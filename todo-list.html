@@ -825,11 +825,21 @@
     }
 
     .todo-actions {
+      display: grid;
+      justify-items: end;
+      gap: 3px;
+      min-width: max-content;
+    }
+
+    .todo-action-row {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
       gap: 4px;
-      min-width: max-content;
+    }
+
+    .repeat-label {
+      font-size: 10px;
+      line-height: 1.2;
     }
 
     .star-btn {
@@ -916,18 +926,6 @@
       color: #6b4c8d;
       background: #f2eaff;
       border-color: #cdb6e7;
-    }
-
-    .pill.morning {
-      color: #9b5f00;
-      background: #fff4d8;
-      border-color: #f1cd7a;
-    }
-
-    .pill.afternoon {
-      color: #1f638a;
-      background: #e2f4ff;
-      border-color: #9bcce8;
     }
 
     .slot-picker {
@@ -2070,10 +2068,6 @@
       return value === "morning" ? 0 : value === "afternoon" ? 1 : 2;
     }
 
-    function timeOfDayLabel(value) {
-      return value === "morning" ? "上午" : value === "afternoon" ? "下午" : "不安排";
-    }
-
     function tasksForDate(dateKey) {
       return data.tasks.filter((task) => {
         const archivedAt = String(task.archivedAt || "").slice(0, 10);
@@ -2216,7 +2210,6 @@
         <span class="slot-picker" aria-label="安排上午或下午">
           <button class="slot-btn ${todo.timeOfDay === "morning" ? "active" : ""}" type="button" data-slot="morning">上午</button>
           <button class="slot-btn ${todo.timeOfDay === "afternoon" ? "active" : ""}" type="button" data-slot="afternoon">下午</button>
-          <button class="slot-btn ${!todo.timeOfDay ? "active" : ""}" type="button" data-slot="">不安排</button>
         </span>
       `;
     }
@@ -2360,15 +2353,18 @@
             <span class="todo-title-row">
               <span class="todo-text">${escapeHtml(todo.text)}</span>
               <span class="todo-actions">
-                <span class="priority-stars" aria-label="任务优先级">
-                  ${renderPriorityStars(todo)}
+                <span class="todo-action-row">
+                  <span class="priority-stars" aria-label="任务优先级">
+                    ${renderPriorityStars(todo)}
+                  </span>
+                  <button class="delete" type="button" aria-label="删除任务">×</button>
                 </span>
-                <button class="delete" type="button" aria-label="删除任务">×</button>
+                ${todo.type === "daily" ? '<span class="pill daily repeat-label">每天重复</span>' : ""}
               </span>
             </span>
             <span class="todo-meta">
               ${renderTimeSlotPicker(todo)}
-              <span class="pill ${todo.type === "daily" ? "daily" : todo.type === "weekly" ? "weekly" : "once"}">${todo.type === "daily" ? "每天重复" : todo.type === "weekly" ? "每周任务" : "当天任务"}</span>
+              ${todo.type !== "daily" ? `<span class="pill ${todo.type === "weekly" ? "weekly" : "once"}">${todo.type === "weekly" ? "每周任务" : "当天任务"}</span>` : ""}
               ${todo.type === "once" ? `<span class="pill">${escapeHtml(todo.date)}</span>` : ""}
               ${todo.type === "weekly" && weekly ? `<span class="pill todo-duration">每周目标 ${escapeHtml(formatMinutes(weekly.target))}</span>` : taskDuration(todo) ? `<span class="pill todo-duration">预计时长 ${escapeHtml(taskDuration(todo))}</span>` : ""}
               ${todo.amount ? `<span class="pill">任务量 ${escapeHtml(String(todo.amount))}</span>` : ""}
@@ -2406,10 +2402,12 @@
               <span class="todo-title-row">
                 <span class="todo-text">${escapeHtml(todo.text)}</span>
                 <span class="todo-actions">
-                  <span class="priority-stars" aria-label="任务优先级">
-                    ${renderPriorityStars(todo)}
+                  <span class="todo-action-row">
+                    <span class="priority-stars" aria-label="任务优先级">
+                      ${renderPriorityStars(todo)}
+                    </span>
+                    <button class="delete" type="button" aria-label="删除任务">×</button>
                   </span>
-                  <button class="delete" type="button" aria-label="删除任务">×</button>
                 </span>
               </span>
               <span class="todo-meta">
@@ -2749,7 +2747,9 @@
       if (event.target.classList.contains("weekly-log-input")) return;
 
       if (event.target.classList.contains("slot-btn")) {
-        setTaskTimeOfDay(item.dataset.id, selectedDate, event.target.dataset.slot || "");
+        const current = taskTimeOfDay(item.dataset.id, selectedDate);
+        const next = event.target.dataset.slot || "";
+        setTaskTimeOfDay(item.dataset.id, selectedDate, current === next ? "" : next);
       }
 
       let weeklyLogChanged = false;
