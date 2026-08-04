@@ -1437,6 +1437,23 @@ Completed:
 - Changed shared reward deduplication to wait until the todo date is actually complete, preventing the balance from dropping as soon as a date is merely opened or partially started.
 - Preserved the existing archive-based deletion behavior across refreshes and kept the refresh-time default-task merge disabled.
 
+## 2026-08-04 Per-Day Task Time Slots
+
+Current phase: post-publish daily task scheduling refinement.
+
+Completed:
+
+- Added per-date task time-slot storage with `上午`, `下午`, and `不安排` choices on each daily task card.
+- Kept time-slot selection out of task creation so the same repeating task can be scheduled differently on different dates.
+- Updated daily task ordering to sort unfinished tasks first, then morning, afternoon, unscheduled, and finally priority stars.
+- Kept old tasks and existing completion data compatible when no time slot has been saved.
+
+Verification:
+
+- Todo-list inline JavaScript syntax check: passed.
+- `node --test --test-isolation=none tests/todo-list-regression.test.js`: passed, 6 tests.
+- `node --test --test-isolation=none`: passed, 111 tests.
+
 Verification:
 
 - Todo-list inline JavaScript syntax check: passed.

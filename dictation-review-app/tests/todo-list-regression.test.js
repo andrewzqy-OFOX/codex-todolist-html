@@ -43,3 +43,13 @@ test("shared rewards are deduplicated only after a todo date is actually complet
   assert.match(todoListHtml, /const completedDates = new Set\(confirmedDatesAscending\(\)\.filter/);
   assert.match(todoListHtml, /completedDates\.has\(date\)/);
 });
+
+test("daily tasks support per-date morning and afternoon scheduling", () => {
+  assert.match(todoListHtml, /timeSlots/);
+  assert.match(todoListHtml, /function taskTimeOfDay\(taskId, dateKey\)/);
+  assert.match(todoListHtml, /function setTaskTimeOfDay\(taskId, dateKey, value\)/);
+  assert.match(todoListHtml, /data-slot="morning"/);
+  assert.match(todoListHtml, /data-slot="afternoon"/);
+  assert.match(todoListHtml, /timeOfDayRank\(a\.timeOfDay\) - timeOfDayRank\(b\.timeOfDay\)/);
+  assert.doesNotMatch(todoListHtml, /time-input|安排时段.*select/);
+});

@@ -918,6 +918,56 @@
       border-color: #cdb6e7;
     }
 
+    .pill.morning {
+      color: #9b5f00;
+      background: #fff4d8;
+      border-color: #f1cd7a;
+    }
+
+    .pill.afternoon {
+      color: #1f638a;
+      background: #e2f4ff;
+      border-color: #9bcce8;
+    }
+
+    .slot-picker {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #ffffff;
+    }
+
+    .slot-btn {
+      min-width: 31px;
+      height: 22px;
+      padding: 0 5px;
+      border: 0;
+      border-radius: 6px;
+      color: var(--muted);
+      background: transparent;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .slot-btn:hover,
+    .slot-btn.active {
+      color: var(--text);
+      background: #eef3ff;
+    }
+
+    .slot-btn[data-slot="morning"].active {
+      color: #9b5f00;
+      background: #fff4d8;
+    }
+
+    .slot-btn[data-slot="afternoon"].active {
+      color: #1f638a;
+      background: #e2f4ff;
+    }
+
     .weekly-progress {
       display: flex;
       flex-wrap: nowrap;
@@ -1834,7 +1884,8 @@
           completions: saved.completions && typeof saved.completions === "object" ? saved.completions : {},
           confirmations: saved.confirmations && typeof saved.confirmations === "object" ? saved.confirmations : {},
           redemptions: Array.isArray(saved.redemptions) ? saved.redemptions : [],
-          weeklyLogs: saved.weeklyLogs && typeof saved.weeklyLogs === "object" ? saved.weeklyLogs : {}
+          weeklyLogs: saved.weeklyLogs && typeof saved.weeklyLogs === "object" ? saved.weeklyLogs : {},
+          timeSlots: saved.timeSlots && typeof saved.timeSlots === "object" ? saved.timeSlots : {}
         });
       }
 
@@ -1856,7 +1907,8 @@
           },
           confirmations: {},
           redemptions: [],
-          weeklyLogs: {}
+          weeklyLogs: {},
+          timeSlots: {}
         });
       }
 
@@ -1865,7 +1917,8 @@
         completions: {},
         confirmations: {},
         redemptions: [],
-        weeklyLogs: {}
+        weeklyLogs: {},
+        timeSlots: {}
       });
     }
 
@@ -1880,6 +1933,9 @@
       nextData.redemptions = Array.isArray(nextData.redemptions) ? nextData.redemptions : [];
       nextData.weeklyLogs = nextData.weeklyLogs && typeof nextData.weeklyLogs === "object"
         ? nextData.weeklyLogs
+        : {};
+      nextData.timeSlots = nextData.timeSlots && typeof nextData.timeSlots === "object"
+        ? nextData.timeSlots
         : {};
       applyJulySeventeenPatch(nextData);
       return nextData;
@@ -1995,6 +2051,29 @@
       return Number.isInteger(count) && count > 0 && count <= 7 ? count : 0;
     }
 
+    function taskTimeOfDay(taskId, dateKey) {
+      const value = data.timeSlots?.[dateKey]?.[taskId];
+      return value === "morning" || value === "afternoon" ? value : "";
+    }
+
+    function setTaskTimeOfDay(taskId, dateKey, value) {
+      data.timeSlots = data.timeSlots || {};
+      data.timeSlots[dateKey] = data.timeSlots[dateKey] || {};
+      if (value === "morning" || value === "afternoon") {
+        data.timeSlots[dateKey][taskId] = value;
+      } else {
+        delete data.timeSlots[dateKey][taskId];
+      }
+    }
+
+    function timeOfDayRank(value) {
+      return value === "morning" ? 0 : value === "afternoon" ? 1 : 2;
+    }
+
+    function timeOfDayLabel(value) {
+      return value === "morning" ? "上午" : value === "afternoon" ? "下午" : "不安排";
+    }
+
     function tasksForDate(dateKey) {
       return data.tasks.filter((task) => {
         const archivedAt = String(task.archivedAt || "").slice(0, 10);
@@ -2073,7 +2152,8 @@
     function visibleTodos() {
       const items = tasksForDate(selectedDate).filter((task) => task.type !== "weekly").map((task) => ({
         ...task,
-        done: isDone(task, selectedDate)
+        done: isDone(task, selectedDate),
+        timeOfDay: taskTimeOfDay(task.id, selectedDate)
       }));
 
       const sorted = sortTodosByDone(items);
@@ -2099,6 +2179,8 @@
       return [...items].sort((a, b) => {
         const doneCompare = Number(a.done) - Number(b.done);
         if (doneCompare) return doneCompare;
+        const timeCompare = timeOfDayRank(a.timeOfDay) - timeOfDayRank(b.timeOfDay);
+        if (timeCompare) return timeCompare;
         const priorityCompare = taskPriority(b) - taskPriority(a);
         if (priorityCompare) return priorityCompare;
         return taskPosition(a.id) - taskPosition(b.id);
@@ -2127,6 +2209,16 @@
       return [1, 2, 3].map((level) => `
         <button class="star-btn ${level <= priority ? "active" : ""}" type="button" data-priority="${level}" aria-label="设置 ${level} 星优先级">★</button>
       `).join("");
+    }
+
+    function renderTimeSlotPicker(todo) {
+      return `
+        <span class="slot-picker" aria-label="安排上午或下午">
+          <button class="slot-btn ${todo.timeOfDay === "morning" ? "active" : ""}" type="button" data-slot="morning">上午</button>
+          <button class="slot-btn ${todo.timeOfDay === "afternoon" ? "active" : ""}" type="button" data-slot="afternoon">下午</button>
+          <button class="slot-btn ${!todo.timeOfDay ? "active" : ""}" type="button" data-slot="">不安排</button>
+        </span>
+      `;
     }
 
     function shouldCelebrate(before, after, dateKey) {
@@ -2275,6 +2367,7 @@
               </span>
             </span>
             <span class="todo-meta">
+              ${renderTimeSlotPicker(todo)}
               <span class="pill ${todo.type === "daily" ? "daily" : todo.type === "weekly" ? "weekly" : "once"}">${todo.type === "daily" ? "每天重复" : todo.type === "weekly" ? "每周任务" : "当天任务"}</span>
               ${todo.type === "once" ? `<span class="pill">${escapeHtml(todo.date)}</span>` : ""}
               ${todo.type === "weekly" && weekly ? `<span class="pill todo-duration">每周目标 ${escapeHtml(formatMinutes(weekly.target))}</span>` : taskDuration(todo) ? `<span class="pill todo-duration">预计时长 ${escapeHtml(taskDuration(todo))}</span>` : ""}
@@ -2654,6 +2747,10 @@
       if (!item) return;
       const beforeStats = dayStats(selectedDate);
       if (event.target.classList.contains("weekly-log-input")) return;
+
+      if (event.target.classList.contains("slot-btn")) {
+        setTaskTimeOfDay(item.dataset.id, selectedDate, event.target.dataset.slot || "");
+      }
 
       let weeklyLogChanged = false;
       if (event.target.classList.contains("weekly-log-btn")) {
