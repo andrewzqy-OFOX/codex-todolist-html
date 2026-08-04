@@ -1446,7 +1446,7 @@ Completed:
 - Added per-date task time-slot storage with `上午`, `下午`, and `不安排` choices on each daily task card.
 - Kept time-slot selection out of task creation so the same repeating task can be scheduled differently on different dates.
 - Removed the visible `不安排` button; no selected slot now means unscheduled, and clicking the active slot toggles it off.
-- Moved the `每天重复` label into the right-side action stack below the priority stars.
+- Moved the `每天重复` label into the task metadata row alongside the morning and afternoon controls.
 - Updated daily task ordering to sort unfinished tasks first, then morning, afternoon, unscheduled, and finally priority stars.
 - Kept old tasks and existing completion data compatible when no time slot has been saved.
 

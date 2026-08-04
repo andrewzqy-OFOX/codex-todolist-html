@@ -51,6 +51,6 @@ test("daily tasks support per-date morning and afternoon scheduling", () => {
   assert.match(todoListHtml, /data-slot="morning"/);
   assert.match(todoListHtml, /data-slot="afternoon"/);
   assert.match(todoListHtml, /timeOfDayRank\(a\.timeOfDay\) - timeOfDayRank\(b\.timeOfDay\)/);
-  assert.match(todoListHtml, /repeat-label">每天重复/);
+  assert.match(todoListHtml, /renderTimeSlotPicker\(todo\)[\s\S]*repeat-label">每天重复/);
   assert.doesNotMatch(todoListHtml, /time-input|安排时段.*select|>不安排<|data-slot=""/);
 });

@@ -838,7 +838,7 @@
     }
 
     .repeat-label {
-      font-size: 10px;
+      font-size: 11px;
       line-height: 1.2;
     }
 
@@ -2359,11 +2359,11 @@
                   </span>
                   <button class="delete" type="button" aria-label="删除任务">×</button>
                 </span>
-                ${todo.type === "daily" ? '<span class="pill daily repeat-label">每天重复</span>' : ""}
               </span>
             </span>
             <span class="todo-meta">
               ${renderTimeSlotPicker(todo)}
+              ${todo.type === "daily" ? '<span class="pill daily repeat-label">每天重复</span>' : ""}
               ${todo.type !== "daily" ? `<span class="pill ${todo.type === "weekly" ? "weekly" : "once"}">${todo.type === "weekly" ? "每周任务" : "当天任务"}</span>` : ""}
               ${todo.type === "once" ? `<span class="pill">${escapeHtml(todo.date)}</span>` : ""}
               ${todo.type === "weekly" && weekly ? `<span class="pill todo-duration">每周目标 ${escapeHtml(formatMinutes(weekly.target))}</span>` : taskDuration(todo) ? `<span class="pill todo-duration">预计时长 ${escapeHtml(taskDuration(todo))}</span>` : ""}
